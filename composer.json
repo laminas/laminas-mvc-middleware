@@ -1,0 +1,60 @@
+{
+    "name": "zendframework/zend-mvc-middleware",
+    "description": "Dispatch middleware pipelines in place of controllers in zend-mvc.",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "components",
+        "middleware",
+        "mvc",
+        "psr-7",
+        "psr-15",
+        "zendframework",
+        "zf"
+    ],
+    "support": {
+        "docs": "https://docs.zendframework.com/zend-mvc-middleware/",
+        "issues": "https://github.com/zendframework/zend-mvc-middleware/issues",
+        "source": "https://github.com/zendframework/zend-mvc-middleware",
+        "rss": "https://github.com/zendframework/zend-mvc-middleware/releases.atom",
+        "chat": "https://zendframework-slack.herokuapp.com",
+        "forum": "https://discourse.zendframework.com/c/questions/components"
+    },
+    "require": {
+        "php": "^7.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.1.1",
+        "zendframework/zend-coding-standard": "~1.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Zend\\Mvc\\Middleware\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ZendTest\\Mvc\\Middleware\\": "test/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        },
+        "zf": {
+            "config-provider": "Zend\\Mvc\\Middleware\\ConfigProvider"
+        }
+    },
+    "scripts": {
+        "check": [
+            "@cs-check",
+            "@test"
+        ],
+        "cs-check": "phpcs",
+        "cs-fix": "phpcbf",
+        "test": "phpunit --colors=always",
+        "test-coverage": "phpunit --colors=always --coverage-clover clover.xml"
+    }
+}

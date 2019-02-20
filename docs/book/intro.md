@@ -1,0 +1,3 @@
+# zend-mvc-middleware
+
+This component provides ...

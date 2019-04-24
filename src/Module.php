@@ -7,18 +7,16 @@
 
 namespace Zend\Mvc\Middleware;
 
-class ConfigProvider
+class Module
 {
-    public function __invoke()
+    /**
+     * @return array
+     */
+    public function getConfig()
     {
+        $provider = new ConfigProvider();
         return [
-            'dependencies' => $this->getDependencies(),
-        ];
-    }
-
-    public function getDependencies()
-    {
-        return [
+            'service_manager' => $provider->getDependencies(),
         ];
     }
 }

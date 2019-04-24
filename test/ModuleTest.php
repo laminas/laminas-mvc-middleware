@@ -3,38 +3,39 @@
  * @see       https://github.com/zendframework/zend-mvc-middleware for the canonical source repository
  * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   https://github.com/zendframework/zend-mvc-middleware/blob/master/LICENSE.md New BSD License
+ *
  */
 
 namespace ZendTest\Mvc\Middleware;
 
 use PHPUnit\Framework\TestCase;
-use Zend\Mvc\Middleware\ConfigProvider;
+use Zend\Mvc\Middleware\Module;
 
-class ConfigProviderTest extends TestCase
+class ModuleTest extends TestCase
 {
     /**
-     * @var ConfigProvider
+     * @var Module
      */
-    private $provider;
+    private $module;
 
     public function setUp()
     {
-        $this->provider = new ConfigProvider();
+        $this->module = new Module();
     }
 
-    public function testInvocationReturnsArray()
+    public function testGetConfigReturnsArray()
     {
-        $config = $this->provider->__invoke();
+        $config = $this->module->getConfig();
         $this->assertInternalType('array', $config);
         return $config;
     }
 
     /**
-     * @depends testInvocationReturnsArray
+     * @depends testGetConfigReturnsArray
      */
     public function testReturnedArrayContainsDependencies(array $config)
     {
-        $this->assertArrayHasKey('dependencies', $config);
-        $this->assertInternalType('array', $config['dependencies']);
+        $this->assertArrayHasKey('service_manager', $config);
+        $this->assertInternalType('array', $config['service_manager']);
     }
 }

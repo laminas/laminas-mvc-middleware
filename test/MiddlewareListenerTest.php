@@ -29,6 +29,9 @@ use Zend\ServiceManager\ServiceManager;
 use Zend\Stdlib\DispatchableInterface;
 use Zend\View\Model\ModelInterface;
 
+/**
+ * @covers \Zend\Mvc\Middleware\MiddlewareListener
+ */
 class MiddlewareListenerTest extends TestCase
 {
     /**

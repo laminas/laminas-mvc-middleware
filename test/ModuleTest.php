@@ -11,6 +11,9 @@ namespace ZendTest\Mvc\Middleware;
 use PHPUnit\Framework\TestCase;
 use Zend\Mvc\Middleware\Module;
 
+/**
+ * @covers \Zend\Mvc\Middleware\Module
+ */
 class ModuleTest extends TestCase
 {
     /**

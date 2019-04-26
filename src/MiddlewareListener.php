@@ -17,7 +17,6 @@ use Zend\EventManager\EventManagerInterface;
 use Zend\Http\Response;
 use Zend\Mvc\Application;
 use Zend\Mvc\Exception\InvalidMiddlewareException;
-use Zend\Mvc\Controller\MiddlewareController;
 use Zend\Mvc\MvcEvent;
 use Zend\Psr7Bridge\Psr7Response;
 use Zend\Stratigility\MiddlewarePipe;

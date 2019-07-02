@@ -7,6 +7,7 @@
 
 namespace Zend\Mvc\Middleware;
 
+use Zend\Mvc\MiddlewareListener as DeprecatedMiddlewareListener;
 use Zend\ServiceManager\Factory\InvokableFactory;
 
 class Module
@@ -19,7 +20,7 @@ class Module
         return [
             'service_manager' => [
                 'aliases' => [
-                    'Zend\Mvc\MiddlewareListener' => MiddlewareListener::class,
+                    DeprecatedMiddlewareListener::class => MiddlewareListener::class,
                 ],
                 'factories' => [
                     MiddlewareListener::class => InvokableFactory::class,

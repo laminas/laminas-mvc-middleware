@@ -30,7 +30,8 @@
     "require-dev": {
         "container-interop/container-interop": "^1.2",
         "phpunit/phpunit": "^6.4.4 || ^5.7.14",
-        "zendframework/zend-coding-standard": "~1.0.0"
+        "zendframework/zend-coding-standard": "~1.0.0",
+        "zendframework/zend-router": "^3.3"
     },
     "autoload": {
         "psr-4": {

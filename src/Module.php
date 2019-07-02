@@ -7,6 +7,8 @@
 
 namespace Zend\Mvc\Middleware;
 
+use Zend\ServiceManager\Factory\InvokableFactory;
+
 class Module
 {
     /**
@@ -14,9 +16,15 @@ class Module
      */
     public function getConfig()
     {
-        $provider = new ConfigProvider();
         return [
-            'service_manager' => $provider->getDependencies(),
+            'service_manager' => [
+                'aliases' => [
+                    'Zend\Mvc\MiddlewareListener' => MiddlewareListener::class,
+                ],
+                'factories' => [
+                    MiddlewareListener::class => InvokableFactory::class,
+                ],
+            ],
         ];
     }
 }

@@ -50,8 +50,7 @@
             "dev-master": "1.0.x-dev"
         },
         "zf": {
-            "component": "Zend\\Mvc\\Middleware",
-            "config-provider": "Zend\\Mvc\\Middleware\\ConfigProvider"
+            "component": "Zend\\Mvc\\Middleware"
         }
     },
     "scripts": {

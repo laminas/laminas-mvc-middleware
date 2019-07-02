@@ -41,7 +41,6 @@ trait ApplicationTrait
             ],
             'module_listener_options' => [
                 'config_cache_enabled' => false,
-                'use_zend_loader' => false,
                 'extra_config' => $extraConfig,
             ]
 

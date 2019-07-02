@@ -10,7 +10,10 @@ namespace ZendTest\Mvc\Middleware\Integration;
 
 use Zend\Mvc\Application;
 use Zend\Mvc\Middleware\Module as MiddlewareModule;
+use Zend\Mvc\MvcEvent;
+use Zend\Mvc\SendResponseListener;
 use Zend\Router\Module as RouterModule;
+use ZendTest\Mvc\Middleware\Integration\TestAsset\NoopSendResponseListener;
 
 trait ApplicationTrait
 {
@@ -18,10 +21,20 @@ trait ApplicationTrait
      * @var Application
      */
     protected $application;
-    protected $config;
+
+    /**
+     * Extra config to use during application set up
+     */
+    protected $extraConfig = [];
+    /**
+     * Fail test with exception message if mvc error event is triggered.
+     */
+    protected $failOnErrorEvents = true;
 
     protected function setUpApplication()
     {
+        $extraConfig = $this->extraConfig;
+        $extraConfig['service_manager']['services'][SendResponseListener::class] = new NoopSendResponseListener();
         $config = [
             'modules' => [
                 RouterModule::class,
@@ -30,15 +43,34 @@ trait ApplicationTrait
             'module_listener_options' => [
                 'config_cache_enabled' => false,
                 'use_zend_loader' => false,
+                'extra_config' => $extraConfig,
             ]
 
         ];
         $this->application = Application::init($config);
+
+        //setup verbose error listeners
+        $errorListener = function (MvcEvent $event) {
+            if (! $this->failOnErrorEvents) {
+                return;
+            }
+            $exception = $event->getParam('exception');
+            $exception = $exception ?: $event->getError();
+            $this->fail((string) $exception);
+        };
+        $this->application
+            ->getEventManager()
+            ->attach(MvcEvent::EVENT_DISPATCH_ERROR, $errorListener, -10000);
+        $this->application
+            ->getEventManager()
+            ->attach(MvcEvent::EVENT_RENDER_ERROR, $errorListener, -10000);
         return $this->application;
     }
 
     protected function tearDownApplication()
     {
         $this->application = null;
+        $this->failOnErrorEvents = true;
+        $this->extraConfig = [];
     }
 }

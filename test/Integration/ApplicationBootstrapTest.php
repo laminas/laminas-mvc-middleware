@@ -9,7 +9,13 @@
 namespace ZendTest\Mvc\Middleware\Integration;
 
 use PHPUnit\Framework\TestCase;
+use Zend\Mvc\Middleware\MiddlewareListener;
+use Zend\Mvc\MiddlewareListener as DeprecatedMiddlewareListener;
 
+/**
+ * @group integration
+ * @coversNothing
+ */
 class ApplicationBootstrapTest extends TestCase
 {
     use ApplicationTrait;
@@ -28,11 +34,10 @@ class ApplicationBootstrapTest extends TestCase
 
     public function testModuleReplacesDefaultMiddlewareListener()
     {
-        $this->application->bootstrap();
         $container = $this->application->getServiceManager();
-        $middlewareListener = $container->get('Zend\Mvc\MiddlewareListener');
+        $middlewareListener = $container->get(DeprecatedMiddlewareListener::class);
+
+        $this->assertInstanceOf(MiddlewareListener::class, $middlewareListener);
         $this->assertSame($middlewareListener, $container->get('MiddlewareListener'));
-
     }
-
 }

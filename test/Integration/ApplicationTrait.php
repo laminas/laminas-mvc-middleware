@@ -8,10 +8,8 @@
 namespace ZendTest\Mvc\Middleware\Integration;
 
 use Zend\Mvc\Application;
-use Zend\Mvc\Middleware\Module as MiddlewareModule;
 use Zend\Mvc\MvcEvent;
 use Zend\Mvc\SendResponseListener;
-use Zend\Router\Module as RouterModule;
 use ZendTest\Mvc\Middleware\Integration\TestAsset\NoopSendResponseListener;
 
 trait ApplicationTrait
@@ -36,8 +34,8 @@ trait ApplicationTrait
         $extraConfig['service_manager']['services'][SendResponseListener::class] = new NoopSendResponseListener();
         $config = [
             'modules' => [
-                RouterModule::class,
-                MiddlewareModule::class,
+                'Zend\Router',
+                'Zend\Mvc\Middleware',
             ],
             'module_listener_options' => [
                 'config_cache_enabled' => false,

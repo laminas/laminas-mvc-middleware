@@ -29,7 +29,7 @@ class MiddlewareDispatchTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        $this->extraConfig = [
+        $this->setUpApplication([
             'router' => [
                 'routes' => [
                     'middleware' => [
@@ -38,13 +38,12 @@ class MiddlewareDispatchTest extends TestCase
                             'route' => '/middleware',
                             'defaults' => [
                                 'middleware' => 'MiddlewareMock'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ];
-        $this->setUpApplication();
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     protected function tearDown()

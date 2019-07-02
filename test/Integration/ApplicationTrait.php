@@ -20,18 +20,12 @@ trait ApplicationTrait
     protected $application;
 
     /**
-     * Extra config to use during application set up
-     */
-    protected $extraConfig = [];
-
-    /**
      * Fail test with exception message if mvc error event is triggered.
      */
     protected $failOnErrorEvents = true;
 
-    protected function setUpApplication()
+    protected function setUpApplication(array $extraConfig = [])
     {
-        $extraConfig = $this->extraConfig;
         $extraConfig['service_manager']['services'][SendResponseListener::class] = new NoopSendResponseListener();
         $config = [
             'modules' => [
@@ -67,6 +61,5 @@ trait ApplicationTrait
     {
         $this->application = null;
         $this->failOnErrorEvents = true;
-        $this->extraConfig = [];
     }
 }

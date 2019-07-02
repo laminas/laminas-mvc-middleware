@@ -1,7 +1,7 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-mvc-middleware for the canonical source repository
- * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
@@ -9,6 +9,8 @@ namespace ZendTest\Mvc\Middleware\TestAsset;
 
 use Interop\Container\ContainerInterface;
 use Zend\ServiceManager\Factory\AbstractFactoryInterface;
+
+use function class_exists;
 
 class MiddlewareAbstractFactory implements AbstractFactoryInterface
 {

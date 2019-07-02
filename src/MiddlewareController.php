@@ -1,7 +1,7 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-mvc-middleware for the canonical source repository
- * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
@@ -9,6 +9,7 @@ namespace Zend\Mvc\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Zend\Diactoros\ServerRequest;
 use Zend\EventManager\EventManagerInterface;
 use Zend\Http\Request;
 use Zend\Mvc\Controller\AbstractController;
@@ -53,7 +54,7 @@ final class MiddlewareController extends AbstractController
     ) {
         $this->eventIdentifier   = [
             DeprecatedMiddlewareController::class,
-            __CLASS__
+            __CLASS__,
         ];
         $this->pipe              = $pipe;
         $this->responsePrototype = $responsePrototype;
@@ -88,7 +89,7 @@ final class MiddlewareController extends AbstractController
     }
 
     /**
-     * @return \Zend\Diactoros\ServerRequest
+     * @return ServerRequest
      *
      * @throws RuntimeException
      */

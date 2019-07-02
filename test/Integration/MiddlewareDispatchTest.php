@@ -1,7 +1,7 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-mvc-middleware for the canonical source repository
- * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
@@ -49,8 +49,8 @@ class MiddlewareDispatchTest extends TestCase
 
     protected function tearDown()
     {
-        parent::tearDown();
         $this->tearDownApplication();
+        parent::tearDown();
     }
 
     public function testDispatchesMiddleware()

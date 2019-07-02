@@ -1,16 +1,18 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-mvc-middleware for the canonical source repository
- * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
 namespace Zend\Mvc\Middleware;
 
+use Exception;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Psr\Http\Message\ResponseInterface;
+use Throwable;
 use Zend\EventManager\AbstractListenerAggregate;
 use Zend\EventManager\EventManagerInterface;
 use Zend\Http\Response;
@@ -25,7 +27,6 @@ class MiddlewareListener extends AbstractListenerAggregate
     /**
      * Attach listeners to an event manager
      *
-     * @param  EventManagerInterface $events
      * @return void
      */
     public function attach(EventManagerInterface $events, $priority = 1)
@@ -36,7 +37,6 @@ class MiddlewareListener extends AbstractListenerAggregate
     /**
      * Listen to the "dispatch" event
      *
-     * @param  MvcEvent $event
      * @return null|Response
      */
     public function onDispatch(MvcEvent $event)
@@ -84,9 +84,9 @@ class MiddlewareListener extends AbstractListenerAggregate
                 $application->getServiceManager()->get('EventManager'),
                 $event
             ))->dispatch($request, $response);
-        } catch (\Throwable $ex) {
+        } catch (Throwable $ex) {
             $caughtException = $ex;
-        } catch (\Exception $ex) {  // @TODO clean up once PHP 7 requirement is enforced
+        } catch (Exception $ex) {  // @TODO clean up once PHP 7 requirement is enforced
             $caughtException = $ex;
         }
 
@@ -117,9 +117,9 @@ class MiddlewareListener extends AbstractListenerAggregate
     /**
      * Create a middleware pipe from the array spec given.
      *
-     * @param ContainerInterface $serviceLocator
-     * @param ResponseInterface $responsePrototype
-     * @param array $middlewaresToBePiped
+     * @param mixed[] $middlewaresToBePiped
+     *      List of string ids for middlewares in container, instances of MiddlewareInterface
+     *      or callable middlewares
      * @return MiddlewarePipe
      * @throws InvalidMiddlewareException
      */
@@ -154,9 +154,6 @@ class MiddlewareListener extends AbstractListenerAggregate
      *
      * @param  string $type
      * @param  string $middlewareName
-     * @param  MvcEvent $event
-     * @param  Application $application
-     * @param  \Exception $exception
      * @return mixed
      */
     protected function marshalInvalidMiddleware(
@@ -164,7 +161,7 @@ class MiddlewareListener extends AbstractListenerAggregate
         $middlewareName,
         MvcEvent $event,
         Application $application,
-        \Exception $exception = null
+        Exception $exception = null
     ) {
         $event->setName(MvcEvent::EVENT_DISPATCH_ERROR);
         $event->setError($type);

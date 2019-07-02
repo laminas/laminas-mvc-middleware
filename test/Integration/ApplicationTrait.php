@@ -1,7 +1,7 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-mvc-middleware for the canonical source repository
- * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
@@ -23,6 +23,7 @@ trait ApplicationTrait
      * Extra config to use during application set up
      */
     protected $extraConfig = [];
+
     /**
      * Fail test with exception message if mvc error event is triggered.
      */
@@ -40,8 +41,7 @@ trait ApplicationTrait
             'module_listener_options' => [
                 'config_cache_enabled' => false,
                 'extra_config' => $extraConfig,
-            ]
-
+            ],
         ];
         $this->application = Application::init($config);
 

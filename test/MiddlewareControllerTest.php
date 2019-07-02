@@ -1,14 +1,16 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-mvc-middleware for the canonical source repository
- * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
 namespace ZendTest\Mvc\Controller;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
+use stdClass;
 use Zend\EventManager\EventManager;
 use Zend\EventManager\EventManagerInterface;
 use Zend\Http\Request;
@@ -28,12 +30,12 @@ use Zend\Stratigility\MiddlewarePipe;
 class MiddlewareControllerTest extends TestCase
 {
     /**
-     * @var MiddlewarePipe|\PHPUnit_Framework_MockObject_MockObject
+     * @var MiddlewarePipe|MockObject
      */
     private $pipe;
 
     /**
-     * @var ResponseInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var ResponseInterface|MockObject
      */
     private $responsePrototype;
 
@@ -43,7 +45,7 @@ class MiddlewareControllerTest extends TestCase
     private $eventManager;
 
     /**
-     * @var AbstractController|\PHPUnit_Framework_MockObject_MockObject
+     * @var AbstractController|MockObject
      */
     private $controller;
 
@@ -97,8 +99,8 @@ class MiddlewareControllerTest extends TestCase
         $request          = new Request();
         $response         = new Response();
         $result           = $this->createMock(ResponseInterface::class);
-        /* @var $dispatchListener callable|\PHPUnit_Framework_MockObject_MockObject */
-        $dispatchListener = $this->getMockBuilder(\stdClass::class)->setMethods(['__invoke'])->getMock();
+        /* @var callable|MockObject $dispatchListener */
+        $dispatchListener = $this->getMockBuilder(stdClass::class)->setMethods(['__invoke'])->getMock();
 
         $this->eventManager->attach(MvcEvent::EVENT_DISPATCH, $dispatchListener, 100);
         $this->eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, function () {
@@ -128,11 +130,11 @@ class MiddlewareControllerTest extends TestCase
 
     public function testWillRefuseDispatchingInvalidRequestTypes()
     {
-        /* @var $request RequestInterface */
+        /* @var RequestInterface $request */
         $request          = $this->createMock(RequestInterface::class);
         $response         = new Response();
-        /* @var $dispatchListener callable|\PHPUnit_Framework_MockObject_MockObject */
-        $dispatchListener = $this->getMockBuilder(\stdClass::class)->setMethods(['__invoke'])->getMock();
+        /* @var callable|MockObject $dispatchListener */
+        $dispatchListener = $this->getMockBuilder(stdClass::class)->setMethods(['__invoke'])->getMock();
 
         $this->eventManager->attach(MvcEvent::EVENT_DISPATCH, $dispatchListener, 100);
 

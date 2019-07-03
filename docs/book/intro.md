@@ -1,4 +1,4 @@
-# zend-mvc-middleware
+# Introduction
 
 This library provides the ability to dispatch middleware pipelines in place of
 controllers within zend-mvc.
@@ -28,7 +28,7 @@ by `Zend\Mvc\Middleware\MiddlewareListener` provided by this package.
 After package installation, `Zend\Mvc\Middleware` module must be registered in your
 zend-mvc based application.
 
-## Mapping routes to middleware
+## Mapping routes to Middleware
 
 The first step is to map a route to PSR-7 middleware. This looks like any other
 [routing](https://docs.zendframework.com/zend-mvc/routing/) configuration,
@@ -37,15 +37,18 @@ defaults, you provide `middleware`:
 
 ```php
 // Via configuration:
+use Application\Middleware\IndexMiddleware;
+use Zend\Router\Http\Literal;
+
 return [
     'router' => [
         'routes' => [
             'home' => [
-                'type' => 'literal',
+                'type' => Literal::class,
                 'options' => [
                     'route' => '/',
                     'defaults' => [
-                        'middleware' => 'Application\Middleware\IndexMiddleware',
+                        'middleware' => IndexMiddleware::class,
                     ],
                 ],
             ],
@@ -55,9 +58,8 @@ return [
 ```
 
 Middleware may be provided as PHP callables, [http-interop/http-middleware](https://github.com/http-interop/http-middleware)
-or as service names.  
-You may also specify an `array` of middleware. Each item in the array must be a
-PHP callable, service name, or http-middleware instance. These will then be piped
+or as string service names.  
+You may also specify an `array` of above middleware types. These will then be piped
 into a `Zend\Stratigility\MiddlewarePipe` instance in the order in which they
 are present in the array.
 
@@ -76,7 +78,7 @@ Middleware retrieved *must* be PHP callables or http-middleware instances.
 The `MiddlewareListener` will create an error response if non-callable middleware
 is indicated.
 
-## Writing middleware
+## Writing Middleware
 
 Starting in zend-mvc 3.1.0 and continued in this package, the `MiddlewareListener`
 always adds middleware to a `Zend\Stratigility\MiddlewarePipe` instance, and invokes it as

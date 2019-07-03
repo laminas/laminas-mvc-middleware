@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file, in reverse 
   provides same middleware functionality as is present in zend-mvc 2.1
   releases.
 
-  To migrate mvc application that already uses zend-mvc optional middleware support
+  To migrate mvc application that already uses zend-mvc optional middleware support,
   install zend-mvc-middleware, pinning it to 1.0.* releases:
   - `composer require zendframework/zend-mvc-middleware:~1.0.0`
   - Enable `Zend\Mvc\Middleware` module in the application

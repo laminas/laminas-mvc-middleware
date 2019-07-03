@@ -37,7 +37,7 @@ class MiddlewareDispatchTest extends TestCase
                         'options' => [
                             'route' => '/middleware',
                             'defaults' => [
-                                'middleware' => 'MiddlewareMock'
+                                'middleware' => 'MiddlewareMock',
                             ],
                         ],
                     ],

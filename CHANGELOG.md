@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
   To migrate mvc application that already uses zend-mvc optional middleware support,
   install zend-mvc-middleware, pinning it to 1.0.* releases:
+  - `composer remove zendframework/zend-psr7bridge`
   - `composer require zendframework/zend-mvc-middleware:~1.0.0`
   - Enable `Zend\Mvc\Middleware` module in the application
 

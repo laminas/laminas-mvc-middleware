@@ -1,8 +1,8 @@
 docs_dir: docs/book
 site_dir: docs/html
-pages:
+nav:
     - Home: index.md
     - Introduction: intro.md
-site_name: zend-mvc-middleware
-site_description: 'Dispatch middleware pipelines in place of controllers in zend-mvc.'
-repo_url: 'https://github.com/zendframework/zend-mvc-middleware'
+site_name: laminas-mvc-middleware
+site_description: 'Dispatch middleware pipelines in place of controllers in laminas-mvc.'
+repo_url: 'https://github.com/laminas/laminas-mvc-middleware'

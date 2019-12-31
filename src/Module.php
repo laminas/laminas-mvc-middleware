@@ -1,14 +1,15 @@
 <?php
+
 /**
- * @see       https://github.com/zendframework/zend-mvc-middleware for the canonical source repository
- * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mvc-middleware/blob/master/LICENSE.md New BSD License
+ * @see       https://github.com/laminas/laminas-mvc-middleware for the canonical source repository
+ * @copyright https://github.com/laminas/laminas-mvc-middleware/blob/master/COPYRIGHT.md
+ * @license   https://github.com/laminas/laminas-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
-namespace Zend\Mvc\Middleware;
+namespace Laminas\Mvc\Middleware;
 
-use Zend\Mvc\MiddlewareListener as DeprecatedMiddlewareListener;
-use Zend\ServiceManager\Factory\InvokableFactory;
+use Laminas\Mvc\MiddlewareListener as DeprecatedMiddlewareListener;
+use Laminas\ServiceManager\Factory\InvokableFactory;
 
 class Module
 {
@@ -21,6 +22,10 @@ class Module
             'service_manager' => [
                 'aliases' => [
                     DeprecatedMiddlewareListener::class => MiddlewareListener::class,
+
+                    // Legacy Zend Framework aliases
+                    \Zend\Mvc\MiddlewareListener::class => DeprecatedMiddlewareListener::class,
+                    \Zend\Mvc\Middleware\MiddlewareListener::class => MiddlewareListener::class,
                 ],
                 'factories' => [
                     MiddlewareListener::class => InvokableFactory::class,

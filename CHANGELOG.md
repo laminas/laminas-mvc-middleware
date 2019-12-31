@@ -6,16 +6,16 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Added
 
-- [#1](https://github.com/zendframework/zend-mvc-middleware) extracts from zend-mvc
+- [zendframework/zend-mvc-middleware#1](https://github.com/laminas/laminas-mvc-middleware) extracts from laminas-mvc
   optional middleware dispatch support as a separate opt-in package and
-  provides same middleware functionality as is present in zend-mvc 2.1
+  provides same middleware functionality as is present in laminas-mvc 2.1
   releases.
 
-  To migrate mvc application that already uses zend-mvc optional middleware support,
-  install zend-mvc-middleware, pinning it to 1.0.* releases:
-  - `composer remove zendframework/zend-psr7bridge`
-  - `composer require zendframework/zend-mvc-middleware:~1.0.0`
-  - Enable `Zend\Mvc\Middleware` module in the application
+  To migrate mvc application that already uses laminas-mvc optional middleware support,
+  install laminas-mvc-middleware, pinning it to 1.0.* releases:
+  - `composer remove laminas/laminas-psr7bridge`
+  - `composer require laminas/laminas-mvc-middleware:~1.0.0`
+  - Enable `Laminas\Mvc\Middleware` module in the application
 
 ### Changed
 

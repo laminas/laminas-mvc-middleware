@@ -1,25 +1,25 @@
-# zend-mvc-middleware
+# laminas-mvc-middleware
 
-[![Build Status](https://secure.travis-ci.org/zendframework/zend-mvc-middleware.svg?branch=master)](https://secure.travis-ci.org/zendframework/zend-mvc-middleware)
-[![Coverage Status](https://coveralls.io/repos/github/zendframework/zend-mvc-middleware/badge.svg?branch=master)](https://coveralls.io/github/zendframework/zend-mvc-middleware?branch=master)
+[![Build Status](https://travis-ci.org/laminas/laminas-mvc-middleware.svg?branch=master)](https://travis-ci.org/laminas/laminas-mvc-middleware)
+[![Coverage Status](https://coveralls.io/repos/github/laminas/laminas-mvc-middleware/badge.svg?branch=master)](https://coveralls.io/github/laminas/laminas-mvc-middleware?branch=master)
 
 This library provides the ability to dispatch middleware pipelines in place of
-controllers within zend-mvc.
+controllers within laminas-mvc.
 
 ## Installation
 
 Run the following to install this library:
 
 ```bash
-$ composer require zendframework/zend-mvc-middleware
+$ composer require laminas/laminas-mvc-middleware
 ```
 
 ## Documentation
 
-Browse the documentation online at https://docs.zendframework.com/zend-mvc-middleware/
+Browse the documentation online at https://docs.laminas.dev/laminas-mvc-middleware/
 
 ## Support
 
-* [Issues](https://github.com/zendframework/zend-mvc-middleware/issues/)
-* [Chat](https://zendframework-slack.herokuapp.com/)
-* [Forum](https://discourse.zendframework.com/)
+* [Issues](https://github.com/laminas/laminas-mvc-middleware/issues/)
+* [Chat](https://laminas.dev/chat/)
+* [Forum](https://discourse.laminas.dev/)

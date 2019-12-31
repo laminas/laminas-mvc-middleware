@@ -1,16 +1,17 @@
 <?php
+
 /**
- * @see       https://github.com/zendframework/zend-mvc-middleware for the canonical source repository
- * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mvc-middleware/blob/master/LICENSE.md New BSD License
+ * @see       https://github.com/laminas/laminas-mvc-middleware for the canonical source repository
+ * @copyright https://github.com/laminas/laminas-mvc-middleware/blob/master/COPYRIGHT.md
+ * @license   https://github.com/laminas/laminas-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
-namespace ZendTest\Mvc\Middleware\Integration;
+namespace LaminasTest\Mvc\Middleware\Integration;
 
-use Zend\Mvc\Application;
-use Zend\Mvc\MvcEvent;
-use Zend\Mvc\SendResponseListener;
-use ZendTest\Mvc\Middleware\Integration\TestAsset\NoopSendResponseListener;
+use Laminas\Mvc\Application;
+use Laminas\Mvc\MvcEvent;
+use Laminas\Mvc\SendResponseListener;
+use LaminasTest\Mvc\Middleware\Integration\TestAsset\NoopSendResponseListener;
 
 trait ApplicationTrait
 {
@@ -29,8 +30,8 @@ trait ApplicationTrait
         $extraConfig['service_manager']['services'][SendResponseListener::class] = new NoopSendResponseListener();
         $config = [
             'modules' => [
-                'Zend\Router',
-                'Zend\Mvc\Middleware',
+                'Laminas\Router',
+                'Laminas\Mvc\Middleware',
             ],
             'module_listener_options' => [
                 'config_cache_enabled' => false,

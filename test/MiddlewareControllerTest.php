@@ -1,31 +1,32 @@
 <?php
+
 /**
- * @see       https://github.com/zendframework/zend-mvc-middleware for the canonical source repository
- * @copyright Copyright (c) 2019 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mvc-middleware/blob/master/LICENSE.md New BSD License
+ * @see       https://github.com/laminas/laminas-mvc-middleware for the canonical source repository
+ * @copyright https://github.com/laminas/laminas-mvc-middleware/blob/master/COPYRIGHT.md
+ * @license   https://github.com/laminas/laminas-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
-namespace ZendTest\Mvc\Controller;
+namespace LaminasTest\Mvc\Controller;
 
+use Laminas\EventManager\EventManager;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\Http\Request;
+use Laminas\Http\Response;
+use Laminas\Mvc\Controller\AbstractController;
+use Laminas\Mvc\Controller\MiddlewareController as DeprecatedMiddlewareController;
+use Laminas\Mvc\Exception\RuntimeException;
+use Laminas\Mvc\Middleware\MiddlewareController;
+use Laminas\Mvc\MvcEvent;
+use Laminas\Stdlib\DispatchableInterface;
+use Laminas\Stdlib\RequestInterface;
+use Laminas\Stratigility\MiddlewarePipe;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use stdClass;
-use Zend\EventManager\EventManager;
-use Zend\EventManager\EventManagerInterface;
-use Zend\Http\Request;
-use Zend\Http\Response;
-use Zend\Mvc\Controller\AbstractController;
-use Zend\Mvc\Controller\MiddlewareController as DeprecatedMiddlewareController;
-use Zend\Mvc\Middleware\MiddlewareController;
-use Zend\Mvc\Exception\RuntimeException;
-use Zend\Mvc\MvcEvent;
-use Zend\Stdlib\DispatchableInterface;
-use Zend\Stdlib\RequestInterface;
-use Zend\Stratigility\MiddlewarePipe;
 
 /**
- * @covers \Zend\Mvc\Middleware\MiddlewareController
+ * @covers \Laminas\Mvc\Middleware\MiddlewareController
  */
 class MiddlewareControllerTest extends TestCase
 {

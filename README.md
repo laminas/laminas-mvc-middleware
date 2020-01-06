@@ -1,6 +1,6 @@
 # laminas-mvc-middleware
 
-[![Build Status](https://travis-ci.org/laminas/laminas-mvc-middleware.svg?branch=master)](https://travis-ci.org/laminas/laminas-mvc-middleware)
+[![Build Status](https://travis-ci.com/laminas/laminas-mvc-middleware.svg?branch=master)](https://travis-ci.com/laminas/laminas-mvc-middleware)
 [![Coverage Status](https://coveralls.io/repos/github/laminas/laminas-mvc-middleware/badge.svg?branch=master)](https://coveralls.io/github/laminas/laminas-mvc-middleware?branch=master)
 
 This library provides the ability to dispatch middleware pipelines in place of

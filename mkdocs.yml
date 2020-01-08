@@ -7,4 +7,4 @@ site_name: laminas-mvc-middleware
 site_description: 'Dispatch middleware pipelines in place of controllers in laminas-mvc.'
 repo_url: 'https://github.com/laminas/laminas-mvc-middleware'
 extra:
-    project: Components
+    project: Mvc

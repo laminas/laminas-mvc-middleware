@@ -6,10 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Dispatch middleware pipelines in place of controllers in laminas-mvc.">  
-    <link rel="canonical" href="https://docs.laminas.dev/intro/">
     <link rel="shortcut icon" href="/img/trademark-laminas-foundation-rgb.svg">
 
-    <title>Introduction - laminas-mvc-middleware - Laminas Docs</title>
+    <title>laminas-mvc-middleware - Laminas Docs</title>
 
     <link rel="stylesheet" href="/css/styles.css">
 </head>
@@ -59,7 +58,7 @@
                     
     <div class="subnavigation hidden-print">
         <h4 class="subnavigation__title">
-            <a href="..">laminas-mvc-middleware</a>
+            <a href="../.">laminas-mvc-middleware</a>
         </h4>
 
         <h5 class="subnavigation__subtitle">Table of Contents</h5>
@@ -73,8 +72,8 @@
                     
                     
                         
-                            <li class="subnavigation__list-item subnavigation__list-item--active">
-                                <a href="./" class="subnavigation__link">Introduction</a>
+                            <li class="subnavigation__list-item ">
+                                <a href="../intro/" class="subnavigation__link">Introduction</a>
                             </li>
                         
                     
@@ -139,206 +138,21 @@
         <div class="row">
             <div class="col-md-2 col-sm-12">
                 
-    
-
-    
-    
-        <div class="toc">
-            <h6 class="toc__headline">On this page</h6>
-            <ul class="toc__list">
-                
-                    <li class="toc__entry">
-                        <a href="#dispatching-psr-7-middleware" class="toc__link">Dispatching PSR-7 Middleware</a>
-                    </li>
-                
-                    <li class="toc__entry">
-                        <a href="#mapping-routes-to-middleware" class="toc__link">Mapping routes to Middleware</a>
-                    </li>
-                
-                    <li class="toc__entry">
-                        <a href="#middleware-services" class="toc__link">Middleware services</a>
-                    </li>
-                
-                    <li class="toc__entry">
-                        <a href="#writing-middleware" class="toc__link">Writing Middleware</a>
-                    </li>
-                
-                    <li class="toc__entry">
-                        <a href="#middleware-return-values" class="toc__link">Middleware return values</a>
-                    </li>
-                
-            </ul>
-        </div>
-    
-
             </div>
             <div class="col-md-7 col-sm-12 content" role="main" data-spy="scroll" data-target=".toc">
                 
-                    <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        
-            <li class="breadcrumb-item"><a href="">Overview</a></li>
 
-            
-                <li class="breadcrumb-item"><a href="..">laminas-mvc-middleware</a></li>
-
-                
-
-                <li class="breadcrumb-item active" aria-current="page">Introduction</li>
-            
-        
-    </ol>
-</nav>
-
-
-
-
-
-
-    
-    
-
-    <h1 id="introduction">Introduction</h1>
-<p>This library provides the ability to dispatch middleware pipelines in place of
-controllers within laminas-mvc.</p>
-<h2 id="dispatching-psr-7-middleware">Dispatching PSR-7 Middleware</h2>
-<p><a href="http://www.php-fig.org/psr/psr-7/">PSR-7</a> defines interfaces for HTTP messages,
-and is now being adopted by many frameworks; Laminas itself offers a
-parallel microframework targeting PSR-7 with <a href="https://docs.mezzio.dev/mezzio">Mezzio</a>.
-What if you want to dispatch PSR-7 middleware from laminas-mvc?</p>
-<p>laminas-mvc currently uses <a href="https://github.com/laminas/laminas-http">laminas-http</a>
-for its HTTP transport layer, and the objects it defines are not compatible with
-PSR-7, meaning the basic MVC layer does not and cannot make use of PSR-7
-currently.</p>
-<p>However, starting with version 2.7.0, laminas-mvc offers
-<code>Laminas\Mvc\MiddlewareListener</code>. This <code>Laminas\Mvc\MvcEvent::EVENT_DISPATCH</code>
-listener listens prior to the default <code>DispatchListener</code>, and executes if the
-route matches contain a "middleware" parameter, and the service that resolves to
-is callable. When those conditions are met, it uses the <a href="https://github.com/laminas/laminas-psr7bridge">PSR-7 bridge</a>
-to convert the laminas-http request and response objects into PSR-7 instances, and
-then invokes the middleware.</p>
-<p>Starting with laminas-mvc version 3.2.0, <code>Laminas\Mvc\MiddlewareListener</code> is deprecated and replaced
-by <code>Laminas\Mvc\Middleware\MiddlewareListener</code> provided by this package.<br />
-After package installation, <code>Laminas\Mvc\Middleware</code> module must be registered in your
-laminas-mvc based application.</p>
-<h2 id="mapping-routes-to-middleware">Mapping routes to Middleware</h2>
-<p>The first step is to map a route to PSR-7 middleware. This looks like any other
-<a href="https://docs.laminas.dev/laminas-mvc/routing/">routing</a> configuration,
-with one small change: instead of providing a <code>controller</code> in the routing
-defaults, you provide <code>middleware</code>:</p>
-<pre class=codehilite><code class=language-php>// Via configuration:
-use Application\Middleware\IndexMiddleware;
-use Laminas\Router\Http\Literal;
-
-return [
-    'router' =&gt; [
-        'routes' =&gt; [
-            'home' =&gt; [
-                'type' =&gt; Literal::class,
-                'options' =&gt; [
-                    'route' =&gt; '/',
-                    'defaults' =&gt; [
-                        'middleware' =&gt; IndexMiddleware::class,
-                    ],
-                ],
-            ],
-        ],
-    ],
-];</code></pre>
-<p>Middleware may be provided as PHP callables, <a href="https://github.com/http-interop/http-middleware">http-interop/http-middleware</a>
-or as string service names.<br />
-You may also specify an <code>array</code> of above middleware types. These will then be piped
-into a <code>Laminas\Stratigility\MiddlewarePipe</code> instance in the order in which they
-are present in the array.</p>
+<h1 class="content__title">404</h1>
 <blockquote>
-<h3>No action required</h3>
-<p>Unlike action controllers, middleware typically is single purpose, and, as
-such, does not require a default <code>action</code> parameter.</p>
+    <h3>Something went wrong!</h3>
+    <p>
+        We're sorry, but the page you are looking for does not exist.
+    </p>
 </blockquote>
-<h2 id="middleware-services">Middleware services</h2>
-<p>In a normal laminas-mvc dispatch cycle, controllers are pulled from a dedicated
-<code>ControllerManager</code>. Middleware, however, are pulled from the application
-service manager.</p>
-<p>Middleware retrieved <em>must</em> be PHP callables or http-middleware instances.
-The <code>MiddlewareListener</code> will create an error response if non-callable middleware
-is indicated.</p>
-<h2 id="writing-middleware">Writing Middleware</h2>
-<p>Starting in laminas-mvc 3.1.0 and continued in this package, the <code>MiddlewareListener</code>
-always adds middleware to a <code>Laminas\Stratigility\MiddlewarePipe</code> instance, and invokes it as
-<a href="https://github.com/http-interop/http-middleware">http-interop/http-middleware</a>,
-passing it a PSR-7 <code>ServerRequestInterface</code> and an http-interop <code>DelegateInterface</code>.</p>
-<p>As such, ideally your middleware should implement the <code>MiddlewareInterface</code> from
-<a href="https://github.com/http-interop/http-middleware">http-interop/http-middleware</a>:</p>
-<pre class=codehilite><code class=language-php>namespace Application\Middleware;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
-use Psr\Http\Message\ServerRequestInterface;
-
-class IndexMiddleware implements MiddlewareInterface
-{
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
-    {
-        // do some work
-    }
-}</code></pre>
-<p>Alternately, you may still write <code>callable</code> middleware using the following
-signature:</p>
-<pre class=codehilite><code class=language-php>use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-
-function (ServerRequestInterface $request, ResponseInterface $response, callable $next)
-{
-    // do some work
-}</code></pre>
-<p>In the above case, the <code>DelegateInterface</code> is decorated as a callable.</p>
-<p>In all versions, within your middleware, you can pull information from the
-composed request, and return a response.</p>
-<blockquote>
-<h3>Routing parameters</h3>
-<p>Route match parameters are pushed into the PSR-7 <code>ServerRequest</code> as
-attributes, and may thus be fetched using <code>$request-&gt;getAttribute($attributeName)</code>.</p>
-</blockquote>
-<h2 id="middleware-return-values">Middleware return values</h2>
-<p>Your middleware must return a PSR-7 response. It is converted back to a laminas-http
-response and returned by the <code>MiddlewareListener</code>, causing the application to
-short-circuit and return the response immediately.</p>
+<a href="../." class="btn btn-default" role="button">Go to homepage</a>
 
 
-
-
-    <nav>
-    <ul class="page-nav hidden-print">
-
-        
-        <li class="page-nav__item">
-            
-                <a rel="prev" class="page-nav__link page-nav__link--prev" href="..">
-                    <i class="fa fa-chevron-left"></i> Previous
-                </a>
-            
-        </li>
-
-        
-        <li class="page-nav__item">
-            
-        </li>
-    </ul>
-</nav>
-
-
-
-
-    <div class="help-wanted">
-        <p>
-            Found a mistake or want to contribute to the documentation?
-            <a href="https://github.com/laminas/laminas-mvc-middleware/edit/master/docs/book/intro.md" target="_blank" class="help-wanted__link">
-                Edit this page on GitHub!
-            </a>
-        </p>
-    </div>
-
-                
             </div>
             <div class="col-md-3 col-sm-12 sidebar">
                 
@@ -353,7 +167,7 @@ short-circuit and return the response immediately.</p>
                     
     <div class="subnavigation hidden-print">
         <h4 class="subnavigation__title">
-            <a href="..">laminas-mvc-middleware</a>
+            <a href="../.">laminas-mvc-middleware</a>
         </h4>
 
         <h5 class="subnavigation__subtitle">Table of Contents</h5>
@@ -367,8 +181,8 @@ short-circuit and return the response immediately.</p>
                     
                     
                         
-                            <li class="subnavigation__list-item subnavigation__list-item--active">
-                                <a href="./" class="subnavigation__link">Introduction</a>
+                            <li class="subnavigation__list-item ">
+                                <a href="../intro/" class="subnavigation__link">Introduction</a>
                             </li>
                         
                     

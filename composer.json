@@ -43,7 +43,7 @@
         "laminas/laminas-coding-standard": "~1.0.0",
         "laminas/laminas-diactoros": "^1.8 || ^2.1",
         "laminas/laminas-router": "^3.3",
-        "phpunit/phpunit": "^6.4.4 || ^5.7.14"
+        "phpunit/phpunit": "^7.5.20 || ^6.4.4 || ^5.7.14"
     },
     "autoload": {
         "psr-4": {

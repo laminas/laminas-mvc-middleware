@@ -36,7 +36,7 @@
         "laminas/laminas-mvc": "^3.1",
         "laminas/laminas-psr7bridge": "^1.0",
         "laminas/laminas-servicemanager": "^3.3",
-        "laminas/laminas-stratigility": "^2.0 <2.2"
+        "laminas/laminas-stratigility": "^2.2.2p2"
     },
     "require-dev": {
         "container-interop/container-interop": "^1.2",

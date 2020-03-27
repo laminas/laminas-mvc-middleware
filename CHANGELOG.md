@@ -14,7 +14,11 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Deprecated
 
-- Nothing.
+- [#2](https://github.com/laminas/laminas-mvc-middleware/pull/2) deprecates
+  direct usage of double-pass and callable middleware. Please use the decorators
+  and helper functions provided by laminas-stratigility
+  (`CallableMiddlewareDecorator`, `DoublePassMiddlewareDecorator`,
+  `middleware()`, and `doublePassMiddleware()`).
 
 ### Removed
 

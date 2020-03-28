@@ -28,7 +28,7 @@
         }
     },
     "require": {
-        "php": "^5.6 || ^7.0",
+        "php": "^7.3",
         "http-interop/http-middleware": "^0.4.1",
         "laminas/laminas-mvc": "^3.1",
         "laminas/laminas-psr7bridge": "^1.2.2",

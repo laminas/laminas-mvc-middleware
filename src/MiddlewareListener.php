@@ -20,7 +20,6 @@ use Laminas\Psr7Bridge\Psr7Response;
 use Laminas\Stratigility\MiddlewarePipe;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Throwable;
 
 class MiddlewareListener extends AbstractListenerAggregate
@@ -106,7 +105,7 @@ class MiddlewareListener extends AbstractListenerAggregate
 
         $event->setError('');
 
-        if (! $return instanceof PsrResponseInterface) {
+        if (! $return instanceof ResponseInterface) {
             $event->setResult($return);
             return $return;
         }

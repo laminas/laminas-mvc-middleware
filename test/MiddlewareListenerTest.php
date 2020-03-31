@@ -24,6 +24,8 @@ use Laminas\Mvc\MvcEvent;
 use Laminas\Router\RouteMatch;
 use Laminas\ServiceManager\ServiceManager;
 use Laminas\Stdlib\DispatchableInterface;
+use Laminas\Stratigility\Middleware\CallableMiddlewareDecorator;
+use Laminas\Stratigility\Middleware\DoublePassMiddlewareDecorator;
 use Laminas\View\Model\ModelInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -89,12 +91,12 @@ class MiddlewareListenerTest extends TestCase
 
     public function testSuccessfullyDispatchesMiddleware()
     {
-        $event = $this->createMvcEvent('path', function ($request, $response) {
+        $event = $this->createMvcEvent('path', new DoublePassMiddlewareDecorator(function ($request, $response) {
             $this->assertInstanceOf(ServerRequestInterface::class, $request);
             $this->assertInstanceOf(ResponseInterface::class, $response);
             $response->getBody()->write('Test!');
             return $response;
-        });
+        }, new DiactorosResponse()));
         $application = $event->getApplication();
 
         $application->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
@@ -139,11 +141,11 @@ class MiddlewareListenerTest extends TestCase
 
         $event = $this->createMvcEvent(
             'foo',
-            function (ServerRequestInterface $request, ResponseInterface $response) use (&$routeAttribute) {
+            new DoublePassMiddlewareDecorator(function ($request, ResponseInterface $response) use (&$routeAttribute) {
                 $routeAttribute = $request->getAttribute(RouteMatch::class);
                 $response->getBody()->write($request->getAttribute('myParam', 'param did not exist'));
                 return $response;
-            }
+            }, new DiactorosResponse())
         );
 
         $this->routeMatch->getParams()->willReturn([
@@ -172,12 +174,14 @@ class MiddlewareListenerTest extends TestCase
         $serviceManager = $this->prophesize(ContainerInterface::class);
         $serviceManager->get('EventManager')->willReturn($eventManager);
         $serviceManager->has('firstMiddleware')->willReturn(true);
-        $serviceManager->get('firstMiddleware')->willReturn(function ($request, $response, $next) {
-            $this->assertInstanceOf(ServerRequestInterface::class, $request);
-            $this->assertInstanceOf(ResponseInterface::class, $response);
-            $this->assertTrue(is_callable($next));
-            return $next($request->withAttribute('firstMiddlewareAttribute', 'firstMiddlewareValue'), $response);
-        });
+        $serviceManager->get('firstMiddleware')->willReturn(
+            new DoublePassMiddlewareDecorator(function ($request, $response, $next) {
+                $this->assertInstanceOf(ServerRequestInterface::class, $request);
+                $this->assertInstanceOf(ResponseInterface::class, $response);
+                $this->assertTrue(is_callable($next));
+                return $next($request->withAttribute('firstMiddlewareAttribute', 'firstMiddlewareValue'), $response);
+            }, new DiactorosResponse())
+        );
 
         $secondMiddleware = $this->createMock(MiddlewareInterface::class);
         $secondMiddleware->expects($this->once())
@@ -233,9 +237,9 @@ class MiddlewareListenerTest extends TestCase
     public function testTriggersErrorForExceptionRaisedInMiddleware()
     {
         $exception   = new Exception();
-        $event       = $this->createMvcEvent('path', function () use ($exception) {
+        $event       = $this->createMvcEvent('path', new CallableMiddlewareDecorator(function () use ($exception) {
             throw $exception;
-        });
+        }));
 
         $application = $event->getApplication();
         $application->getEventManager()
@@ -373,7 +377,7 @@ class MiddlewareListenerTest extends TestCase
         /* @var Application|MockObject $application */
         $application    = $this->createMock(Application::class);
         $eventManager   = new EventManager();
-        $middleware     = $this->getMockBuilder(stdClass::class)->setMethods(['__invoke'])->getMock();
+        $middleware     = $this->getMockBuilder(MiddlewareInterface::class)->setMethods(['process'])->getMock();
         $serviceManager = new ServiceManager([
             'factories' => [
                 'EventManager' => function () {
@@ -389,7 +393,7 @@ class MiddlewareListenerTest extends TestCase
         $application->expects(self::any())->method('getEventManager')->willReturn($eventManager);
         $application->expects(self::any())->method('getServiceManager')->willReturn($serviceManager);
         $application->expects(self::any())->method('getResponse')->willReturn(new Response());
-        $middleware->expects(self::once())->method('__invoke')->willReturn($response);
+        $middleware->expects(self::once())->method('process')->willReturn($response);
 
         $event = new MvcEvent();
 
@@ -417,7 +421,7 @@ class MiddlewareListenerTest extends TestCase
         /* @var callable|MockObject $sharedListener */
         $sharedListener = $this->getMockBuilder(stdClass::class)->setMethods(['__invoke'])->getMock();
         $eventManager   = new EventManager();
-        $middleware     = $this->getMockBuilder(stdClass::class)->setMethods(['__invoke'])->getMock();
+        $middleware     = $this->getMockBuilder(MiddlewareInterface::class)->setMethods(['process'])->getMock();
         $serviceManager = new ServiceManager([
             'factories' => [
                 'EventManager' => function () use ($sharedManager) {
@@ -433,7 +437,7 @@ class MiddlewareListenerTest extends TestCase
         $application->expects(self::any())->method('getEventManager')->willReturn($eventManager);
         $application->expects(self::any())->method('getServiceManager')->willReturn($serviceManager);
         $application->expects(self::any())->method('getResponse')->willReturn(new Response());
-        $middleware->expects(self::once())->method('__invoke')->willReturn($response);
+        $middleware->expects(self::once())->method('process')->willReturn($response);
 
         $event = new MvcEvent();
 

@@ -8,13 +8,16 @@
 
 namespace LaminasTest\Mvc\Middleware\TestAsset;
 
-use Psr\Http\Message\ResponseInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
+use Laminas\Diactoros\Response;
 use Psr\Http\Message\ServerRequestInterface;
 
-class Middleware
+class Middleware implements MiddlewareInterface
 {
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next = null)
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
     {
+        $response = new Response();
         $response->getBody()->write(__CLASS__);
         return $response;
     }

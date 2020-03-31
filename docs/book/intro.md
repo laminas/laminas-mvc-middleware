@@ -63,6 +63,15 @@ You may also specify an `array` of above middleware types. These will then be pi
 into a `Laminas\Stratigility\MiddlewarePipe` instance in the order in which they
 are present in the array.
 
+Starting with the 1.1 release, direct usage of double-pass and callable middleware
+is deprecated. laminas-stratigility 2.2 provides the following decorators
+and helper functions that are forwards-compatible with its 3.0 release:
+
+- `Laminas\Stratigility\Middleware\CallableMiddlewareDecorator`
+- `Laminas\Stratigility\Middleware\DoublePassMiddlewareDecorator`
+- `Laminas\Stratigility\doublePassMiddleware()`
+- `Laminas\Stratigility\middleware()`
+
 > ### No action required
 >
 > Unlike action controllers, middleware typically is single purpose, and, as

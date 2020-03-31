@@ -309,6 +309,15 @@ or as string service names.<br />
 You may also specify an <code>array</code> of above middleware types. These will then be piped
 into a <code>Laminas\Stratigility\MiddlewarePipe</code> instance in the order in which they
 are present in the array.</p>
+<p>Starting with the 1.1 release, direct usage of double-pass and callable middleware
+is deprecated. laminas-stratigility 2.2 provides the following decorators
+and helper functions that are forwards-compatible with its 3.0 release:</p>
+<ul>
+<li><code>Laminas\Stratigility\Middleware\CallableMiddlewareDecorator</code></li>
+<li><code>Laminas\Stratigility\Middleware\DoublePassMiddlewareDecorator</code></li>
+<li><code>Laminas\Stratigility\doublePassMiddleware()</code></li>
+<li><code>Laminas\Stratigility\middleware()</code></li>
+</ul>
 <blockquote>
 <h3>No action required</h3>
 <p>Unlike action controllers, middleware typically is single purpose, and, as

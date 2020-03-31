@@ -34,7 +34,7 @@
         "php": "^5.6 || ^7.0",
         "http-interop/http-middleware": "^0.4.1",
         "laminas/laminas-mvc": "^3.1",
-        "laminas/laminas-psr7bridge": "^1.0",
+        "laminas/laminas-psr7bridge": "^1.2.2",
         "laminas/laminas-servicemanager": "^3.3",
         "laminas/laminas-stratigility": "^2.2.2p2"
     },

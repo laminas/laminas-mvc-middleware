@@ -285,7 +285,7 @@ laminas-mvc based application.</p>
 <a href="https://docs.laminas.dev/laminas-mvc/routing/">routing</a> configuration,
 with one small change: instead of providing a <code>controller</code> in the routing
 defaults, you provide <code>middleware</code>:</p>
-<pre class=codehilite><code class=language-php>// Via configuration:
+<pre class="highlight"><code class="language-php">// Via configuration:
 use Application\Middleware\IndexMiddleware;
 use Laminas\Router\Http\Literal;
 
@@ -304,6 +304,7 @@ return [
         ],
     ],
 ];</code></pre>
+
 <p>Middleware may be provided as PHP callables, <a href="https://github.com/http-interop/http-middleware">http-interop/http-middleware</a>
 or as string service names.<br />
 You may also specify an <code>array</code> of above middleware types. These will then be piped
@@ -337,7 +338,7 @@ always adds middleware to a <code>Laminas\Stratigility\MiddlewarePipe</code> ins
 passing it a PSR-7 <code>ServerRequestInterface</code> and an http-interop <code>DelegateInterface</code>.</p>
 <p>As such, ideally your middleware should implement the <code>MiddlewareInterface</code> from
 <a href="https://github.com/http-interop/http-middleware">http-interop/http-middleware</a>:</p>
-<pre class=codehilite><code class=language-php>namespace Application\Middleware;
+<pre class="highlight"><code class="language-php">namespace Application\Middleware;
 
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
@@ -350,15 +351,17 @@ class IndexMiddleware implements MiddlewareInterface
         // do some work
     }
 }</code></pre>
+
 <p>Alternately, you may still write <code>callable</code> middleware using the following
 signature:</p>
-<pre class=codehilite><code class=language-php>use Psr\Http\Message\ResponseInterface;
+<pre class="highlight"><code class="language-php">use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 function (ServerRequestInterface $request, ResponseInterface $response, callable $next)
 {
     // do some work
 }</code></pre>
+
 <p>In the above case, the <code>DelegateInterface</code> is decorated as a callable.</p>
 <p>In all versions, within your middleware, you can pull information from the
 composed request, and return a response.</p>

@@ -21,7 +21,7 @@ class ModuleTest extends TestCase
      */
     private $module;
 
-    public function setUp()
+    protected function setUp() : void
     {
         $this->module = new Module();
     }
@@ -29,7 +29,7 @@ class ModuleTest extends TestCase
     public function testGetConfigReturnsArray()
     {
         $config = $this->module->getConfig();
-        $this->assertInternalType('array', $config);
+        $this->assertIsArray($config);
         return $config;
     }
 
@@ -39,6 +39,6 @@ class ModuleTest extends TestCase
     public function testReturnedArrayContainsDependencies(array $config)
     {
         $this->assertArrayHasKey('service_manager', $config);
-        $this->assertInternalType('array', $config['service_manager']);
+        $this->assertIsArray($config['service_manager']);
     }
 }

@@ -29,6 +29,7 @@ use Laminas\Stratigility\Middleware\DoublePassMiddlewareDecorator;
 use Laminas\View\Model\ModelInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -44,6 +45,8 @@ use function uniqid;
  */
 class MiddlewareListenerTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @var ObjectProphecy
      */

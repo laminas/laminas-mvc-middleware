@@ -17,6 +17,7 @@ use Laminas\Router\Http\Literal;
 use LaminasTest\Mvc\Middleware\TestAsset\Middleware;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use stdClass;
 
 /**
@@ -26,8 +27,9 @@ use stdClass;
 class MiddlewareDispatchTest extends TestCase
 {
     use ApplicationTrait;
+    use ProphecyTrait;
 
-    protected function setUp()
+    protected function setUp() : void
     {
         parent::setUp();
         $this->setUpApplication([
@@ -47,7 +49,7 @@ class MiddlewareDispatchTest extends TestCase
         ]);
     }
 
-    protected function tearDown()
+    protected function tearDown() : void
     {
         $this->tearDownApplication();
         parent::tearDown();
@@ -76,7 +78,7 @@ class MiddlewareDispatchTest extends TestCase
         $services->setService('MiddlewareMock', new Middleware());
 
         $listener = $this->getMockBuilder(stdClass::class)
-            ->setMethods(['__invoke'])
+            ->addMethods(['__invoke'])
             ->getMock();
         $listener->expects(self::atLeastOnce())->method('__invoke');
         /** @var callable $listener */
@@ -93,7 +95,7 @@ class MiddlewareDispatchTest extends TestCase
         $services->setService('MiddlewareMock', new Middleware());
 
         $listener = $this->getMockBuilder(stdClass::class)
-            ->setMethods(['__invoke'])
+            ->addMethods(['__invoke'])
             ->getMock();
         $listener->expects(self::atLeastOnce())->method('__invoke');
         /** @var callable $listener */

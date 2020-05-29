@@ -8,29 +8,29 @@
 
 namespace Laminas\Mvc\Middleware;
 
-use Laminas\Diactoros\ServerRequest;
 use Laminas\EventManager\EventManagerInterface;
 use Laminas\Http\Request;
 use Laminas\Mvc\Controller\AbstractController;
 use Laminas\Mvc\Controller\MiddlewareController as DeprecatedMiddlewareController;
-use Laminas\Mvc\Exception\ReachedFinalHandlerException;
 use Laminas\Mvc\Exception\RuntimeException;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Psr7Bridge\Psr7ServerRequest;
 use Laminas\Router\RouteMatch;
-use Laminas\Stratigility\Delegate\CallableDelegateDecorator;
 use Laminas\Stratigility\MiddlewarePipe;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+use function get_class;
 
 /**
  * @internal don't use this in your codebase, or else @ocramius will hunt you
  *     down. This is just an internal hack to make middleware trigger
  *     'dispatch' events attached to the DispatchableInterface identifier.
  *
- *     Specifically, it will receive a @see MiddlewarePipe and a
- *     @see ResponseInterface prototype, and then dispatch the pipe whilst still
- *     behaving like a normal controller. That is needed for any events
+ *     Specifically, it will receive a {@see RequestHandlerInterface} and then
+ *     dispatch it whilst still behaving like a normal controller. Prior to
+ *     {@see RequestHandlerInterface} introduction it expected {@see MiddlewarePipe}
+ *     That is needed for any events
  *     attached to the @see \Laminas\Stdlib\DispatchableInterface identifier to
  *     reach their listeners on any attached
  *     @see \Laminas\EventManager\SharedEventManagerInterface
@@ -38,18 +38,12 @@ use Psr\Http\Message\ServerRequestInterface;
 final class MiddlewareController extends AbstractController
 {
     /**
-     * @var MiddlewarePipe
+     * @var RequestHandlerInterface
      */
-    private $pipe;
-
-    /**
-     * @var ResponseInterface
-     */
-    private $responsePrototype;
+    private $requestHandler;
 
     public function __construct(
-        MiddlewarePipe $pipe,
-        ResponseInterface $responsePrototype,
+        RequestHandlerInterface $requestHandler,
         EventManagerInterface $eventManager,
         MvcEvent $event
     ) {
@@ -57,8 +51,7 @@ final class MiddlewareController extends AbstractController
             DeprecatedMiddlewareController::class,
             __CLASS__,
         ];
-        $this->pipe              = $pipe;
-        $this->responsePrototype = $responsePrototype;
+        $this->requestHandler = $requestHandler;
 
         $this->setEventManager($eventManager);
         $this->setEvent($event);
@@ -72,29 +65,21 @@ final class MiddlewareController extends AbstractController
     public function onDispatch(MvcEvent $e)
     {
         $routeMatch  = $e->getRouteMatch();
-        $psr7Request = $this->populateRequestParametersFromRoute(
-            $this->loadRequest()->withAttribute(RouteMatch::class, $routeMatch),
-            $routeMatch
-        );
+        $psr7Request = $this->loadRequest();
+        if ($routeMatch) {
+            $psr7Request = $psr7Request->withAttribute(RouteMatch::class, $routeMatch);
+        }
 
-        $result = $this->pipe->process($psr7Request, new CallableDelegateDecorator(
-            function () {
-                throw ReachedFinalHandlerException::create();
-            },
-            $this->responsePrototype
-        ));
+        $response = $this->requestHandler->handle($psr7Request);
 
-        $e->setResult($result);
-
-        return $result;
+        $e->setResult($response);
+        return $response;
     }
 
     /**
-     * @return ServerRequest
-     *
      * @throws RuntimeException
      */
-    private function loadRequest()
+    private function loadRequest() : ServerRequestInterface
     {
         $request = $this->request;
 
@@ -107,24 +92,5 @@ final class MiddlewareController extends AbstractController
         }
 
         return Psr7ServerRequest::fromLaminas($request);
-    }
-
-    /**
-     * @param ServerRequestInterface $request
-     * @param RouteMatch|null $routeMatch
-     *
-     * @return ServerRequestInterface
-     */
-    private function populateRequestParametersFromRoute(ServerRequestInterface $request, RouteMatch $routeMatch = null)
-    {
-        if (! $routeMatch) {
-            return $request;
-        }
-
-        foreach ($routeMatch->getParams() as $key => $value) {
-            $request = $request->withAttribute($key, $value);
-        }
-
-        return $request;
     }
 }

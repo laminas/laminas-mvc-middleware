@@ -70,10 +70,10 @@ final class MiddlewareController extends AbstractController
             $psr7Request = $psr7Request->withAttribute(RouteMatch::class, $routeMatch);
         }
 
-        $response = $this->requestHandler->handle($psr7Request);
+        $psr7Response = $this->requestHandler->handle($psr7Request);
 
-        $e->setResult($response);
-        return $response;
+        $e->setResult($psr7Response);
+        return $psr7Response;
     }
 
     /**

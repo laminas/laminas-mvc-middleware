@@ -8,7 +8,6 @@
 
 namespace LaminasTest\Mvc\Middleware\Integration;
 
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Laminas\Diactoros\Response;
 use Laminas\Mvc\Controller\MiddlewareController as DeprecatedMiddlewareController;
 use Laminas\Mvc\Middleware\MiddlewareController;
@@ -18,6 +17,7 @@ use LaminasTest\Mvc\Middleware\TestAsset\Middleware;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Psr\Http\Server\MiddlewareInterface;
 use stdClass;
 
 /**

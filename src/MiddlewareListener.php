@@ -8,8 +8,6 @@
 
 namespace Laminas\Mvc\Middleware;
 
-use Exception;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Laminas\EventManager\AbstractListenerAggregate;
 use Laminas\EventManager\EventManagerInterface;
 use Laminas\Http\Response;
@@ -17,10 +15,17 @@ use Laminas\Mvc\Application;
 use Laminas\Mvc\Exception\InvalidMiddlewareException;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Psr7Bridge\Psr7Response;
+use Laminas\Stratigility\Middleware\RequestHandlerMiddleware;
 use Laminas\Stratigility\MiddlewarePipe;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
+
+use function gettype;
+use function is_object;
+use function is_string;
 
 class MiddlewareListener extends AbstractListenerAggregate
 {
@@ -29,7 +34,7 @@ class MiddlewareListener extends AbstractListenerAggregate
      *
      * @return void
      */
-    public function attach(EventManagerInterface $events, $priority = 1)
+    public function attach(EventManagerInterface $events, $priority = 1) : void
     {
         $this->listeners[] = $events->attach(MvcEvent::EVENT_DISPATCH, [$this, 'onDispatch'], 1);
     }
@@ -56,12 +61,9 @@ class MiddlewareListener extends AbstractListenerAggregate
         $response       = $application->getResponse();
         $serviceManager = $application->getServiceManager();
 
-        $psr7ResponsePrototype = Psr7Response::fromLaminas($response);
-
         try {
             $pipe = $this->createPipeFromSpec(
                 $serviceManager,
-                $psr7ResponsePrototype,
                 is_array($middleware) ? $middleware : [$middleware]
             );
         } catch (InvalidMiddlewareException $invalidMiddlewareException) {
@@ -80,20 +82,13 @@ class MiddlewareListener extends AbstractListenerAggregate
         try {
             $return = (new MiddlewareController(
                 $pipe,
-                $psr7ResponsePrototype,
                 $application->getServiceManager()->get('EventManager'),
                 $event
             ))->dispatch($request, $response);
-        } catch (Throwable $ex) {
-            $caughtException = $ex;
-        } catch (Exception $ex) {  // @TODO clean up once PHP 7 requirement is enforced
-            $caughtException = $ex;
-        }
-
-        if ($caughtException !== null) {
+        } catch (Throwable $exception) {
             $event->setName(MvcEvent::EVENT_DISPATCH_ERROR);
             $event->setError(Application::ERROR_EXCEPTION);
-            $event->setParam('exception', $caughtException);
+            $event->setParam('exception', $exception);
 
             $events  = $application->getEventManager();
             $results = $events->triggerEvent($event);
@@ -117,34 +112,46 @@ class MiddlewareListener extends AbstractListenerAggregate
     /**
      * Create a middleware pipe from the array spec given.
      *
-     * @param mixed[] $middlewaresToBePiped
-     *      List of string ids for middlewares in container, instances of MiddlewareInterface
-     *      or callable middlewares
-     * @return MiddlewarePipe
+     * @param mixed[] $middlewarePipeSpec
+     *      List of string ids for middleware in container, instances of MiddlewareInterface
+     *      or RequestHandlerInterface
      * @throws InvalidMiddlewareException
      */
     private function createPipeFromSpec(
         ContainerInterface $serviceLocator,
-        ResponseInterface $responsePrototype,
-        array $middlewaresToBePiped
-    ) {
+        array $middlewarePipeSpec
+    ): RequestHandlerInterface {
+        // Pipe has implicit empty pipeline handler
         $pipe = new MiddlewarePipe();
-        $pipe->setResponsePrototype($responsePrototype);
-        foreach ($middlewaresToBePiped as $middlewareToBePiped) {
+        foreach ($middlewarePipeSpec as $middlewareToBePiped) {
             if (null === $middlewareToBePiped) {
                 throw InvalidMiddlewareException::fromNull();
             }
 
-            $middlewareName = is_string($middlewareToBePiped) ? $middlewareToBePiped : get_class($middlewareToBePiped);
+            $middlewareName = is_object($middlewareToBePiped)
+                ? get_class($middlewareToBePiped)
+                : gettype($middlewareToBePiped);
 
-            if (is_string($middlewareToBePiped) && $serviceLocator->has($middlewareToBePiped)) {
+            if (is_string($middlewareToBePiped)) {
+                $middlewareName = $middlewareToBePiped;
+                if (! $serviceLocator->has($middlewareToBePiped)) {
+                    // throw separately for stacktrace line hint
+                    throw InvalidMiddlewareException::fromMiddlewareName($middlewareName);
+                }
                 $middlewareToBePiped = $serviceLocator->get($middlewareToBePiped);
             }
-            if (! $middlewareToBePiped instanceof MiddlewareInterface && ! is_callable($middlewareToBePiped)) {
-                throw InvalidMiddlewareException::fromMiddlewareName($middlewareName);
+
+            if ($middlewareToBePiped instanceof MiddlewareInterface) {
+                $pipe->pipe($middlewareToBePiped);
+                continue;
+            }
+            if ($middlewareToBePiped instanceof RequestHandlerInterface) {
+                $middlewareToBePiped = new RequestHandlerMiddleware($middlewareToBePiped);
+                $pipe->pipe($middlewareToBePiped);
+                break; // request handler will always stop pipe processing. Rest of the pipe can be ignored
             }
 
-            $pipe->pipe($middlewareToBePiped);
+            throw InvalidMiddlewareException::fromMiddlewareName($middlewareName);
         }
         return $pipe;
     }
@@ -161,7 +168,7 @@ class MiddlewareListener extends AbstractListenerAggregate
         $middlewareName,
         MvcEvent $event,
         Application $application,
-        Exception $exception = null
+        Throwable $exception = null
     ) {
         $event->setName(MvcEvent::EVENT_DISPATCH_ERROR);
         $event->setError($type);

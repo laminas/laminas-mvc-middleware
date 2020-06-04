@@ -9,34 +9,31 @@
 namespace LaminasTest\Mvc\Middleware;
 
 use Exception;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Laminas\Diactoros\Response as DiactorosResponse;
-use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\EventManager\EventManager;
 use Laminas\EventManager\SharedEventManager;
 use Laminas\Http\Request;
 use Laminas\Http\Response;
 use Laminas\Mvc\Application;
 use Laminas\Mvc\Exception\InvalidMiddlewareException;
-use Laminas\Mvc\Exception\ReachedFinalHandlerException;
 use Laminas\Mvc\Middleware\MiddlewareListener;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Router\RouteMatch;
 use Laminas\ServiceManager\ServiceManager;
 use Laminas\Stdlib\DispatchableInterface;
+use Laminas\Stratigility\Exception\EmptyPipelineException;
 use Laminas\Stratigility\Middleware\CallableMiddlewareDecorator;
-use Laminas\Stratigility\Middleware\DoublePassMiddlewareDecorator;
 use Laminas\View\Model\ModelInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use stdClass;
 
-use function is_callable;
 use function sprintf;
 use function uniqid;
 
@@ -48,7 +45,7 @@ class MiddlewareListenerTest extends TestCase
     use ProphecyTrait;
 
     /**
-     * @var ObjectProphecy
+     * @var RouteMatch
      */
     private $routeMatch;
 
@@ -57,14 +54,11 @@ class MiddlewareListenerTest extends TestCase
      *
      * @param string $middlewareMatched Middleware service matched by routing
      * @param mixed $middleware Value to return for middleware service
-     * @return MvcEvent
      */
-    public function createMvcEvent($middlewareMatched, $middleware = null)
+    public function createMvcEvent($middlewareMatched, $middleware = null): MvcEvent
     {
         $response = new Response();
-        $this->routeMatch = $this->prophesize(RouteMatch::class);
-        $this->routeMatch->getParam('middleware', false)->willReturn($middlewareMatched);
-        $this->routeMatch->getParams()->willReturn([]);
+        $this->routeMatch = new RouteMatch(['middleware' => $middlewareMatched]);
 
         $eventManager   = new EventManager();
         $serviceManager = new ServiceManager([
@@ -73,9 +67,7 @@ class MiddlewareListenerTest extends TestCase
                     return new EventManager();
                 },
             ],
-            'services' => [
-                $middlewareMatched => $middleware,
-            ],
+            'services' => null !== $middleware ? [$middlewareMatched => $middleware] : [],
         ]);
 
         $application = $this->prophesize(Application::class);
@@ -87,138 +79,92 @@ class MiddlewareListenerTest extends TestCase
         $event->setRequest(new Request());
         $event->setResponse($response);
         $event->setApplication($application->reveal());
-        $event->setRouteMatch($this->routeMatch->reveal());
+        $event->setRouteMatch($this->routeMatch);
 
         return $event;
     }
 
-    public function testSuccessfullyDispatchesMiddleware()
+    public function testSuccessfullyDispatchesMiddlewareAndReturnsResponse()
     {
-        $event = $this->createMvcEvent('path', new DoublePassMiddlewareDecorator(function ($request, $response) {
-            $this->assertInstanceOf(ServerRequestInterface::class, $request);
-            $this->assertInstanceOf(ResponseInterface::class, $response);
-            $response->getBody()->write('Test!');
-            return $response;
-        }, new DiactorosResponse()));
-        $application = $event->getApplication();
-
-        $application->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
-            $this->fail(sprintf('dispatch.error triggered when it should not be: %s', var_export($e->getError(), 1)));
+        $event = $this->createMvcEvent('path', new class implements MiddlewareInterface {
+            public function process(
+                ServerRequestInterface $request,
+                RequestHandlerInterface $handler
+            ): ResponseInterface {
+                $response = new DiactorosResponse();
+                $response->getBody()->write('Test!');
+                return $response;
+            }
         });
 
         $listener = new MiddlewareListener();
         $return = $listener->onDispatch($event);
-        $this->assertInstanceOf(Response::class, $return);
 
-        $this->assertInstanceOf(Response::class, $return);
+        $this->assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
         $this->assertSame(200, $return->getStatusCode());
         $this->assertEquals('Test!', $return->getBody());
     }
 
-    public function testSuccessfullyDispatchesHttpInteropMiddleware()
+    public function testSuccessfullyDispatchesRequestHandlerAndReturnsResponse()
     {
-        $expectedOutput = uniqid('expectedOutput', true);
-
-        $middleware = $this->createMock(MiddlewareInterface::class);
-        $middleware->expects($this->once())->method('process')->willReturn(new HtmlResponse($expectedOutput));
-
-        $event = $this->createMvcEvent('path', $middleware);
-        $application = $event->getApplication();
-
-        $application->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
-            $this->fail(sprintf('dispatch.error triggered when it should not be: %s', var_export($e->getError(), 1)));
-        });
-
-        $listener = new MiddlewareListener();
-        $return   = $listener->onDispatch($event);
-        $this->assertInstanceOf(Response::class, $return);
-
-        $this->assertSame(200, $return->getStatusCode());
-        $this->assertEquals($expectedOutput, $return->getBody());
-    }
-
-    public function testMatchedRouteParamsAreInjectedToRequestAsAttributes()
-    {
-        $matchedRouteParam = uniqid('matched param', true);
-        $routeAttribute = null;
-
-        $event = $this->createMvcEvent(
-            'foo',
-            new DoublePassMiddlewareDecorator(function ($request, ResponseInterface $response) use (&$routeAttribute) {
-                $routeAttribute = $request->getAttribute(RouteMatch::class);
-                $response->getBody()->write($request->getAttribute('myParam', 'param did not exist'));
+        $event = $this->createMvcEvent('path', new class implements RequestHandlerInterface {
+            public function handle(ServerRequestInterface $request): ResponseInterface
+            {
+                $response = new DiactorosResponse();
+                $response->getBody()->write('Test!');
                 return $response;
-            }, new DiactorosResponse())
-        );
-
-        $this->routeMatch->getParams()->willReturn([
-            'myParam' => $matchedRouteParam,
-        ]);
+            }
+        });
 
         $listener = new MiddlewareListener();
-        $return   = $listener->onDispatch($event);
-        $this->assertInstanceOf(Response::class, $return);
-        $this->assertSame($matchedRouteParam, $return->getBody());
-        $this->assertSame($this->routeMatch->reveal(), $routeAttribute);
+        $return = $listener->onDispatch($event);
+
+        $this->assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
+        $this->assertSame(200, $return->getStatusCode());
+        $this->assertEquals('Test!', $return->getBody());
     }
 
-    public function testSuccessfullyDispatchesPipeOfCallableAndHttpInteropStyleMiddlewares()
+    /**
+     * @group integration
+     */
+    public function testRouteMatchIsInjectedToRequestAsAttribute()
     {
-        $response   = new Response();
-        $routeMatch = $this->prophesize(RouteMatch::class);
-        $routeMatch->getParams()->willReturn([]);
-        $routeMatch->getParam('middleware', false)->willReturn([
-            'firstMiddleware',
-            'secondMiddleware',
-        ]);
+        $routeMatch = null;
 
-        $eventManager = new EventManager();
-
-        $serviceManager = $this->prophesize(ContainerInterface::class);
-        $serviceManager->get('EventManager')->willReturn($eventManager);
-        $serviceManager->has('firstMiddleware')->willReturn(true);
-        $serviceManager->get('firstMiddleware')->willReturn(
-            new DoublePassMiddlewareDecorator(function ($request, $response, $next) {
-                $this->assertInstanceOf(ServerRequestInterface::class, $request);
-                $this->assertInstanceOf(ResponseInterface::class, $response);
-                $this->assertTrue(is_callable($next));
-                return $next($request->withAttribute('firstMiddlewareAttribute', 'firstMiddlewareValue'), $response);
-            }, new DiactorosResponse())
-        );
-
-        $secondMiddleware = $this->createMock(MiddlewareInterface::class);
-        $secondMiddleware->expects($this->once())
-            ->method('process')
-            ->willReturnCallback(function (ServerRequestInterface $request) {
-                return new HtmlResponse($request->getAttribute('firstMiddlewareAttribute'));
-            });
-
-        $serviceManager->has('secondMiddleware')->willReturn(true);
-        $serviceManager->get('secondMiddleware')->willReturn($secondMiddleware);
-
-        $application = $this->prophesize(Application::class);
-        $application->getEventManager()->willReturn($eventManager);
-        $application->getServiceManager()->will(function () use ($serviceManager) {
-            return $serviceManager->reveal();
-        });
-        $application->getResponse()->willReturn($response);
-
-        $event = new MvcEvent();
-        $event->setRequest(new Request());
-        $event->setResponse($response);
-        $event->setApplication($application->reveal());
-        $event->setRouteMatch($routeMatch->reveal());
-
-        $event->getApplication()->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
-            $this->fail(sprintf('dispatch.error triggered when it should not be: %s', var_export($e->getError(), 1)));
-        });
+        $event = $this->createMvcEvent('foo', new CallableMiddlewareDecorator(
+            function (ServerRequestInterface $request, RequestHandlerInterface $handler) use (&$routeMatch) {
+                $routeMatch = $request->getAttribute(RouteMatch::class);
+                return new DiactorosResponse();
+            }
+        ));
 
         $listener = new MiddlewareListener();
         $return   = $listener->onDispatch($event);
-        $this->assertInstanceOf(Response::class, $return);
+        $this->assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
+        $this->assertInstanceOf(RouteMatch::class, $routeMatch);
+    }
 
-        $this->assertSame(200, $return->getStatusCode());
-        $this->assertEquals('firstMiddlewareValue', $return->getBody());
+    /**
+     * @group integration
+     */
+    public function testRouteMatchParametersAreNotInjectedAsAttributes()
+    {
+        $passedRequest = null;
+        $event = $this->createMvcEvent('foo', new CallableMiddlewareDecorator(
+            function (ServerRequestInterface $request, RequestHandlerInterface $handler) use (&$passedRequest) {
+                $passedRequest = $request;
+                return new DiactorosResponse();
+            }
+        ));
+        $matchedRouteParam = uniqid('matched param', true);
+        $this->routeMatch->setParam('myParam', $matchedRouteParam);
+
+        $listener = new MiddlewareListener();
+        $return   = $listener->onDispatch($event);
+        $this->assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
+        $this->assertInstanceOf(ServerRequestInterface::class, $passedRequest);
+        /** @var ServerRequestInterface $passedRequest */
+        $this->assertArrayNotHasKey('myParam', $passedRequest->getAttributes());
     }
 
     public function testTriggersErrorForUncallableMiddleware()
@@ -328,7 +274,7 @@ class MiddlewareListenerTest extends TestCase
 
         $event->getApplication()->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
             $this->assertEquals(Application::ERROR_EXCEPTION, $e->getError());
-            $this->assertInstanceOf(ReachedFinalHandlerException::class, $e->getParam('exception'));
+            $this->assertInstanceOf(EmptyPipelineException::class, $e->getParam('exception'));
             return 'FAILED';
         });
 

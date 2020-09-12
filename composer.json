@@ -23,10 +23,6 @@
         "sort-packages": true
     },
     "extra": {
-        "branch-alias": {
-            "dev-master": "1.1.x-dev",
-            "dev-develop": "2.0.x-dev"
-        },
         "laminas": {
             "component": "Laminas\\Mvc\\Middleware"
         }

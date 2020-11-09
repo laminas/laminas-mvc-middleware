@@ -34,9 +34,11 @@
         "laminas/laminas-servicemanager": "^3.4",
         "laminas/laminas-stratigility": "^3.3",
         "psr/http-server-handler": "^1.0",
-        "psr/http-server-middleware": "^1.0"
+        "psr/http-server-middleware": "^1.0",
+        "webmozart/assert": "^1.9"
     },
     "require-dev": {
+        "brick/varexporter": "^0.3.2",
         "container-interop/container-interop": "^1.2",
         "laminas/laminas-coding-standard": "~1.0.0",
         "laminas/laminas-diactoros": "^2.4",

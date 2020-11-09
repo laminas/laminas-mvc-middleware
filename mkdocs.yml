@@ -1,10 +1,26 @@
 docs_dir: docs/book
 site_dir: docs/html
 nav:
-    - Home: index.md
-    - Introduction: intro.md
+  - Home: index.md
+  - v2:
+      - Introduction: v2/intro.md
+      - Installation: v2/installation.md
+      - Quick Start: v2/quick-start.md
+      - Dispatching Middleware: v2/dispatching-middleware.md
+      - Migration:
+          - Migration from Version 1: v2/migration.md
+  - v1:
+      - Introduction: v1/intro.md
+  - _hidden-legacy-page-links:
+      - _intro: intro.md
 site_name: laminas-mvc-middleware
 site_description: 'Dispatch middleware pipelines in place of controllers in laminas-mvc.'
 repo_url: 'https://github.com/laminas/laminas-mvc-middleware'
 extra:
-    project: MVC
+  project: MVC
+  installation:
+    module_class: 'Laminas\Mvc\Middleware'
+  current_version: v2
+  versions:
+    - v2
+    - v1

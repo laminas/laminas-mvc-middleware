@@ -23,6 +23,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
 
+use function get_class;
 use function gettype;
 use function is_object;
 use function is_string;
@@ -42,7 +43,7 @@ class MiddlewareListener extends AbstractListenerAggregate
     /**
      * Listen to the "dispatch" event
      *
-     * @return null|Response
+     * @return null|Response|mixed
      */
     public function onDispatch(MvcEvent $event)
     {
@@ -51,21 +52,23 @@ class MiddlewareListener extends AbstractListenerAggregate
         }
 
         $routeMatch = $event->getRouteMatch();
+        if (! $routeMatch || $routeMatch->getParam('controller') !== PipeSpec::class) {
+            return null;
+        }
+
         $middleware = $routeMatch->getParam('middleware', false);
         if (false === $middleware) {
             return null;
         }
 
         $request        = $event->getRequest();
+        /** @var Application $application */
         $application    = $event->getApplication();
         $response       = $application->getResponse();
         $serviceManager = $application->getServiceManager();
 
         try {
-            $pipe = $this->createPipeFromSpec(
-                $serviceManager,
-                is_array($middleware) ? $middleware : [$middleware]
-            );
+            $pipe = $this->createPipeFromSpec($serviceManager, $middleware);
         } catch (InvalidMiddlewareException $invalidMiddlewareException) {
             $return = $this->marshalInvalidMiddleware(
                 Application::ERROR_MIDDLEWARE_CANNOT_DISPATCH,
@@ -78,7 +81,6 @@ class MiddlewareListener extends AbstractListenerAggregate
             return $return;
         }
 
-        $caughtException = null;
         try {
             $return = (new MiddlewareController(
                 $pipe,
@@ -112,18 +114,37 @@ class MiddlewareListener extends AbstractListenerAggregate
     /**
      * Create a middleware pipe from the array spec given.
      *
-     * @param mixed[] $middlewarePipeSpec
-     *      List of string ids for middleware in container, instances of MiddlewareInterface
-     *      or RequestHandlerInterface
+     * @param string|MiddlewareInterface|RequestHandlerInterface|PipeSpec $middlewarePipeSpec
      * @throws InvalidMiddlewareException
      */
     private function createPipeFromSpec(
-        ContainerInterface $serviceLocator,
-        array $middlewarePipeSpec
+        ContainerInterface $container,
+        $middlewarePipeSpec
     ): RequestHandlerInterface {
-        // Pipe has implicit empty pipeline handler
+        if (is_string($middlewarePipeSpec)) {
+            $middlewarePipeSpec = $this->middlewareFromContainer($container, $middlewarePipeSpec);
+        }
+        if ($middlewarePipeSpec instanceof RequestHandlerInterface) {
+            return $middlewarePipeSpec;
+        }
+
         $pipe = new MiddlewarePipe();
-        foreach ($middlewarePipeSpec as $middlewareToBePiped) {
+        if ($middlewarePipeSpec instanceof MiddlewareInterface) {
+            $pipe->pipe($middlewarePipeSpec);
+            return $pipe;
+        }
+
+        if (! $middlewarePipeSpec instanceof PipeSpec) {
+            throw new InvalidMiddlewareException(sprintf(
+                'Route match parameter "middleware" must be one of: string container id, %s, %s or %s; %s given',
+                MiddlewareInterface::class,
+                RequestHandlerInterface::class,
+                PipeSpec::class,
+                is_object($middlewarePipeSpec) ? get_class($middlewarePipeSpec) : gettype($middlewarePipeSpec)
+            ));
+        }
+        // Pipe has implicit empty pipeline handler
+        foreach ($middlewarePipeSpec->getSpec() as $middlewareToBePiped) {
             if (null === $middlewareToBePiped) {
                 throw InvalidMiddlewareException::fromNull();
             }
@@ -133,12 +154,7 @@ class MiddlewareListener extends AbstractListenerAggregate
                 : gettype($middlewareToBePiped);
 
             if (is_string($middlewareToBePiped)) {
-                $middlewareName = $middlewareToBePiped;
-                if (! $serviceLocator->has($middlewareToBePiped)) {
-                    // throw separately for stacktrace line hint
-                    throw InvalidMiddlewareException::fromMiddlewareName($middlewareName);
-                }
-                $middlewareToBePiped = $serviceLocator->get($middlewareToBePiped);
+                $middlewareToBePiped = $this->middlewareFromContainer($container, $middlewareToBePiped);
             }
 
             if ($middlewareToBePiped instanceof MiddlewareInterface) {
@@ -159,13 +175,16 @@ class MiddlewareListener extends AbstractListenerAggregate
     /**
      * Marshal a middleware not callable exception event
      *
-     * @param  string $type
-     * @param  string $middlewareName
+     * @param string $type
+     * @param string $middlewareName
+     * @param MvcEvent $event
+     * @param Application $application
+     * @param null|Throwable $exception
      * @return mixed
      */
     protected function marshalInvalidMiddleware(
-        $type,
-        $middlewareName,
+        string $type,
+        string $middlewareName,
         MvcEvent $event,
         Application $application,
         Throwable $exception = null
@@ -185,5 +204,20 @@ class MiddlewareListener extends AbstractListenerAggregate
             $return = $event->getResult();
         }
         return $return;
+    }
+
+    /**
+     * @return MiddlewareInterface|RequestHandlerInterface
+     */
+    private function middlewareFromContainer(ContainerInterface $container, string $middlewareName)
+    {
+        if (! $container->has($middlewareName)) {
+            throw InvalidMiddlewareException::fromMiddlewareName($middlewareName);
+        }
+        $middleware = $container->get($middlewareName);
+        if (! $middleware instanceof MiddlewareInterface && ! $middleware instanceof RequestHandlerInterface) {
+            throw InvalidMiddlewareException::fromMiddlewareName($middlewareName);
+        }
+        return $middleware;
     }
 }

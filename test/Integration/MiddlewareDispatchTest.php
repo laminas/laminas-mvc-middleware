@@ -11,6 +11,7 @@ namespace LaminasTest\Mvc\Middleware\Integration;
 use Laminas\Diactoros\Response;
 use Laminas\Mvc\Controller\MiddlewareController as DeprecatedMiddlewareController;
 use Laminas\Mvc\Middleware\MiddlewareController;
+use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Router\Http\Literal;
 use LaminasTest\Mvc\Middleware\TestAsset\Middleware;
@@ -40,6 +41,7 @@ class MiddlewareDispatchTest extends TestCase
                         'options' => [
                             'route' => '/middleware',
                             'defaults' => [
+                                'controller' => PipeSpec::class,
                                 'middleware' => 'MiddlewareMock',
                             ],
                         ],

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Laminas\Mvc\Middleware;
 
+use Closure;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Webmozart\Assert\Assert;
@@ -16,7 +17,7 @@ final class PipeSpec
     private $spec;
 
     /**
-     * @param string|RequestHandlerInterface|MiddlewareInterface ...$spec
+     * @param string|RequestHandlerInterface|MiddlewareInterface|Closure ...$spec
      */
     public function __construct(...$spec)
     {

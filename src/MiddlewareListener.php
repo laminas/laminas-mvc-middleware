@@ -8,6 +8,7 @@
 
 namespace Laminas\Mvc\Middleware;
 
+use Closure;
 use Laminas\EventManager\AbstractListenerAggregate;
 use Laminas\EventManager\EventManagerInterface;
 use Laminas\Http\Response;
@@ -15,6 +16,7 @@ use Laminas\Mvc\Application;
 use Laminas\Mvc\Exception\InvalidMiddlewareException;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Psr7Bridge\Psr7Response;
+use Laminas\Stratigility\Middleware\CallableMiddlewareDecorator;
 use Laminas\Stratigility\Middleware\RequestHandlerMiddleware;
 use Laminas\Stratigility\MiddlewarePipe;
 use Psr\Container\ContainerInterface;
@@ -155,6 +157,11 @@ class MiddlewareListener extends AbstractListenerAggregate
 
             if (is_string($middlewareToBePiped)) {
                 $middlewareToBePiped = $this->middlewareFromContainer($container, $middlewareToBePiped);
+            }
+
+            if ($middlewareToBePiped instanceof Closure) {
+                $pipe->pipe(new CallableMiddlewareDecorator($middlewareToBePiped));
+                continue;
             }
 
             if ($middlewareToBePiped instanceof MiddlewareInterface) {

@@ -130,6 +130,25 @@ class MiddlewareListenerTest extends TestCase
             $response->getBody()->write('Closure Middleware!');
             return $response;
         };
+        $containerMiddleware = new class implements MiddlewareInterface {
+            public function process(
+                ServerRequestInterface $request,
+                RequestHandlerInterface $handler
+            ): ResponseInterface {
+                $response = $handler->handle($request);
+                $response->getBody()->write('Container Middleware!');
+                return $response;
+            }
+        };
+        $containerHandler = new class implements RequestHandlerInterface {
+            public function handle(
+                ServerRequestInterface $request
+            ): ResponseInterface {
+                $response = new DiactorosResponse();
+                $response->getBody()->write('Container Handler!');
+                return $response;
+            }
+        };
 
         yield 'middleware as container key string' => [
             [
@@ -165,6 +184,14 @@ class MiddlewareListenerTest extends TestCase
             [],
             'Handler!'
         ];
+        yield 'middleware as PipeSpec with middleware+handler instance uses middleware' => [
+            [
+                'controller' => PipeSpec::class,
+                'middleware' => new PipeSpec($middlewareWithHandler),
+            ],
+            [],
+            'Middleware!'
+        ];
         yield 'middleware as PipeSpec' => [
             [
                 'controller' => PipeSpec::class,
@@ -175,6 +202,22 @@ class MiddlewareListenerTest extends TestCase
             ],
             [],
             'Handler!Middleware!'
+        ];
+        yield 'middleware as PipeSpec with all supported types' => [
+            [
+                'controller' => PipeSpec::class,
+                'middleware' => new PipeSpec(
+                    $middleware,
+                    'middleware_container_key',
+                    $closureMiddleware,
+                    'handler_container_key'
+                ),
+            ],
+            [
+                'middleware_container_key' => $containerMiddleware,
+                'handler_container_key' => $containerHandler,
+            ],
+            'Container Handler!Closure Middleware!Container Middleware!Middleware!'
         ];
     }
 
@@ -194,9 +237,14 @@ class MiddlewareListenerTest extends TestCase
         $listener = new MiddlewareListener();
         $return = $listener->onDispatch($event);
 
-        self::assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
+        self::assertInstanceOf(
+            Response::class,
+            $return,
+            (string)$event->getParam('exception', 'Middleware dispatch failed')
+        );
         self::assertSame(200, $return->getStatusCode());
         self::assertEquals($expectedBody, $return->getBody());
+        self::assertNull($event->getParam('exception'));
     }
 
     /**

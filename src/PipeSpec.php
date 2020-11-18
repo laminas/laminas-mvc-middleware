@@ -34,8 +34,7 @@ final class PipeSpec
      */
     public static function __set_state(array $state): self
     {
-        Assert::keyExists($state, 'spec', 'Failed to restore state. Config cache is invalid');
-        $spec = $state['spec'];
+        $spec = $state['spec'] ?? null;
         Assert::isArray($spec, 'Failed to restore state. Config cache is invalid');
         return new self(...$spec);
     }

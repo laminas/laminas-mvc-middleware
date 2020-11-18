@@ -6,6 +6,8 @@
  * @license   https://github.com/laminas/laminas-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
+declare(strict_types=1);
+
 namespace Laminas\Mvc\Middleware;
 
 use Closure;
@@ -33,9 +35,7 @@ use function is_string;
 class MiddlewareListener extends AbstractListenerAggregate
 {
     /**
-     * Attach listeners to an event manager
-     *
-     * @return void
+     * {@inheritDoc}
      */
     public function attach(EventManagerInterface $events, $priority = 1) : void
     {
@@ -54,14 +54,11 @@ class MiddlewareListener extends AbstractListenerAggregate
         }
 
         $routeMatch = $event->getRouteMatch();
-        if (! $routeMatch || $routeMatch->getParam('controller') !== PipeSpec::class) {
+        if ($routeMatch === null || $routeMatch->getParam('controller') !== PipeSpec::class) {
             return null;
         }
 
-        $middleware = $routeMatch->getParam('middleware', false);
-        if (false === $middleware) {
-            return null;
-        }
+        $middleware = $routeMatch->getParam('middleware', null);
 
         $request        = $event->getRequest();
         /** @var Application $application */
@@ -114,9 +111,9 @@ class MiddlewareListener extends AbstractListenerAggregate
     }
 
     /**
-     * Create a middleware pipe from the array spec given.
+     * Create a middleware pipe from the spec given.
      *
-     * @param string|MiddlewareInterface|RequestHandlerInterface|PipeSpec $middlewarePipeSpec
+     * @param string|MiddlewareInterface|RequestHandlerInterface|PipeSpec|mixed $middlewarePipeSpec
      * @throws InvalidMiddlewareException
      */
     private function createPipeFromSpec(
@@ -130,13 +127,9 @@ class MiddlewareListener extends AbstractListenerAggregate
             return $middlewarePipeSpec;
         }
 
-        $pipe = new MiddlewarePipe();
         if ($middlewarePipeSpec instanceof MiddlewareInterface) {
-            $pipe->pipe($middlewarePipeSpec);
-            return $pipe;
-        }
-
-        if (! $middlewarePipeSpec instanceof PipeSpec) {
+            $middlewarePipeSpec = new PipeSpec($middlewarePipeSpec);
+        } elseif (! $middlewarePipeSpec instanceof PipeSpec) {
             throw new InvalidMiddlewareException(sprintf(
                 'Route match parameter "middleware" must be one of: string container id, %s, %s or %s; %s given',
                 MiddlewareInterface::class,
@@ -145,7 +138,9 @@ class MiddlewareListener extends AbstractListenerAggregate
                 is_object($middlewarePipeSpec) ? get_class($middlewarePipeSpec) : gettype($middlewarePipeSpec)
             ));
         }
+
         // Pipe has implicit empty pipeline handler
+        $pipe = new MiddlewarePipe();
         foreach ($middlewarePipeSpec->getSpec() as $middlewareToBePiped) {
             if (null === $middlewareToBePiped) {
                 throw InvalidMiddlewareException::fromNull();
@@ -182,11 +177,6 @@ class MiddlewareListener extends AbstractListenerAggregate
     /**
      * Marshal a middleware not callable exception event
      *
-     * @param string $type
-     * @param string $middlewareName
-     * @param MvcEvent $event
-     * @param Application $application
-     * @param null|Throwable $exception
      * @return mixed
      */
     protected function marshalInvalidMiddleware(
@@ -215,6 +205,8 @@ class MiddlewareListener extends AbstractListenerAggregate
 
     /**
      * @return MiddlewareInterface|RequestHandlerInterface
+     * @throws InvalidMiddlewareException When container has no entry or returned entry is not an instance of PSR
+     * middleware or handler
      */
     private function middlewareFromContainer(ContainerInterface $container, string $middlewareName)
     {

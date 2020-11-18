@@ -6,6 +6,8 @@
  * @license   https://github.com/laminas/laminas-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
+declare(strict_types=1);
+
 namespace Laminas\Mvc\Middleware;
 
 use Laminas\Mvc\MiddlewareListener as DeprecatedMiddlewareListener;
@@ -13,10 +15,7 @@ use Laminas\ServiceManager\Factory\InvokableFactory;
 
 class Module
 {
-    /**
-     * @return array
-     */
-    public function getConfig()
+    public function getConfig(): array
     {
         return [
             'service_manager' => [

@@ -30,6 +30,9 @@ final class PipeSpec
         $this->spec = $spec;
     }
 
+    /**
+     * @psalm-return list<string|RequestHandlerInterface|MiddlewareInterface|Closure>
+     */
     public function getSpec(): array
     {
         return $this->spec;
@@ -37,6 +40,8 @@ final class PipeSpec
 
     /**
      * Support serialization via var_export
+     *
+     * @internal
      */
     public static function __set_state(array $state): self
     {

@@ -6,6 +6,8 @@
  * @license   https://github.com/laminas/laminas-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
+declare(strict_types=1);
+
 namespace LaminasTest\Mvc\Middleware\Integration;
 
 use Laminas\Diactoros\Response;

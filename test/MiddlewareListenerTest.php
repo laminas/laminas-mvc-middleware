@@ -16,7 +16,7 @@ use Laminas\EventManager\EventManager;
 use Laminas\Http\Request;
 use Laminas\Http\Response;
 use Laminas\Mvc\Application;
-use Laminas\Mvc\Exception\InvalidMiddlewareException;
+use Laminas\Mvc\Middleware\InvalidMiddlewareException;
 use Laminas\Mvc\Middleware\MiddlewareListener;
 use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Mvc\MvcEvent;

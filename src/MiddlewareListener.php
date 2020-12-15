@@ -14,7 +14,6 @@ use Closure;
 use Laminas\EventManager\AbstractListenerAggregate;
 use Laminas\EventManager\EventManagerInterface;
 use Laminas\Mvc\Application;
-use Laminas\Mvc\Exception\InvalidMiddlewareException;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Psr7Bridge\Psr7Response;
 use Laminas\Stratigility\Middleware\CallableMiddlewareDecorator;

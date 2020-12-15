@@ -42,12 +42,13 @@ class MiddlewareListenerTest extends TestCase
 
     /**
      * Create an MvcEvent, populated with everything it needs.
+     *
      * @psalm-param array<string, mixed> $matchedParams
      * @psalm-param array<string, mixed> $services
      */
     public function createMvcEvent(array $matchedParams, array $services = []): MvcEvent
     {
-        $response = new Response();
+        $response   = new Response();
         $routeMatch = new RouteMatch($matchedParams);
 
         $eventManager   = new EventManager();
@@ -57,7 +58,7 @@ class MiddlewareListenerTest extends TestCase
                     return new EventManager();
                 },
             ],
-            'services' => $services,
+            'services'  => $services,
         ]);
 
         $application = $this->prophesize(Application::class);
@@ -74,10 +75,10 @@ class MiddlewareListenerTest extends TestCase
         return $event;
     }
 
-    public function validMiddlewareProvider() : iterable
+    public function validMiddlewareProvider(): iterable
     {
         // Remember that mutable body writes are bad!
-        $middleware = new class implements MiddlewareInterface {
+        $middleware             = new class implements MiddlewareInterface {
             public function process(
                 ServerRequestInterface $request,
                 RequestHandlerInterface $handler
@@ -97,7 +98,7 @@ class MiddlewareListenerTest extends TestCase
                 return $response;
             }
         };
-        $handler = new class implements RequestHandlerInterface {
+        $handler                = new class implements RequestHandlerInterface {
             public function handle(
                 ServerRequestInterface $request
             ): ResponseInterface {
@@ -106,7 +107,7 @@ class MiddlewareListenerTest extends TestCase
                 return $response;
             }
         };
-        $middlewareWithHandler = new class implements MiddlewareInterface, RequestHandlerInterface {
+        $middlewareWithHandler  = new class implements MiddlewareInterface, RequestHandlerInterface {
             public function process(
                 ServerRequestInterface $request,
                 RequestHandlerInterface $handler
@@ -124,7 +125,7 @@ class MiddlewareListenerTest extends TestCase
                 return $response;
             }
         };
-        $closureMiddleware = static function (
+        $closureMiddleware      = static function (
             ServerRequestInterface $request,
             RequestHandlerInterface $handler
         ): ResponseInterface {
@@ -132,7 +133,7 @@ class MiddlewareListenerTest extends TestCase
             $response->getBody()->write('Closure Middleware!');
             return $response;
         };
-        $containerMiddleware = new class implements MiddlewareInterface {
+        $containerMiddleware    = new class implements MiddlewareInterface {
             public function process(
                 ServerRequestInterface $request,
                 RequestHandlerInterface $handler
@@ -142,7 +143,7 @@ class MiddlewareListenerTest extends TestCase
                 return $response;
             }
         };
-        $containerHandler = new class implements RequestHandlerInterface {
+        $containerHandler       = new class implements RequestHandlerInterface {
             public function handle(
                 ServerRequestInterface $request
             ): ResponseInterface {
@@ -158,9 +159,9 @@ class MiddlewareListenerTest extends TestCase
                 'middleware' => 'middleware_container_key',
             ],
             [
-                'middleware_container_key' => $directReturnMiddleware
+                'middleware_container_key' => $directReturnMiddleware,
             ],
-            'Middleware!'
+            'Middleware!',
         ];
         yield 'middleware as middleware instance' => [
             [
@@ -168,7 +169,7 @@ class MiddlewareListenerTest extends TestCase
                 'middleware' => $directReturnMiddleware,
             ],
             [],
-            'Middleware!'
+            'Middleware!',
         ];
         yield 'middleware as handler instance' => [
             [
@@ -176,7 +177,7 @@ class MiddlewareListenerTest extends TestCase
                 'middleware' => $handler,
             ],
             [],
-            'Handler!'
+            'Handler!',
         ];
         yield 'middleware as middleware+handler instance uses handler' => [
             [
@@ -184,7 +185,7 @@ class MiddlewareListenerTest extends TestCase
                 'middleware' => $middlewareWithHandler,
             ],
             [],
-            'Handler!'
+            'Handler!',
         ];
         yield 'middleware as PipeSpec with middleware+handler instance uses middleware' => [
             [
@@ -192,7 +193,7 @@ class MiddlewareListenerTest extends TestCase
                 'middleware' => new PipeSpec($middlewareWithHandler),
             ],
             [],
-            'Middleware!'
+            'Middleware!',
         ];
         yield 'middleware as PipeSpec' => [
             [
@@ -203,7 +204,7 @@ class MiddlewareListenerTest extends TestCase
                 ),
             ],
             [],
-            'Handler!Middleware!'
+            'Handler!Middleware!',
         ];
         yield 'middleware as PipeSpec with all supported types' => [
             [
@@ -217,15 +218,14 @@ class MiddlewareListenerTest extends TestCase
             ],
             [
                 'middleware_container_key' => $containerMiddleware,
-                'handler_container_key' => $containerHandler,
+                'handler_container_key'    => $containerHandler,
             ],
-            'Container Handler!Closure Middleware!Container Middleware!Middleware!'
+            'Container Handler!Closure Middleware!Container Middleware!Middleware!',
         ];
     }
 
     /**
      * @dataProvider validMiddlewareProvider
-     *
      * @psalm-param array<string, mixed> $matchedParams
      * @psalm-param array<string, mixed> $services
      */
@@ -237,12 +237,12 @@ class MiddlewareListenerTest extends TestCase
         $event = $this->createMvcEvent($matchedParams, $services);
 
         $listener = new MiddlewareListener();
-        $return = $listener->onDispatch($event);
+        $return   = $listener->onDispatch($event);
 
         self::assertInstanceOf(
             Response::class,
             $return,
-            (string)$event->getParam('exception', 'Middleware dispatch failed')
+            (string) $event->getParam('exception', 'Middleware dispatch failed')
         );
         self::assertSame(200, $return->getStatusCode());
         self::assertEquals($expectedBody, $return->getBody());
@@ -251,7 +251,6 @@ class MiddlewareListenerTest extends TestCase
 
     /**
      * @dataProvider validMiddlewareProvider
-     *
      * @psalm-param array<string, mixed> $matchedParams
      * @psalm-param array<string, mixed> $services
      */
@@ -260,16 +259,16 @@ class MiddlewareListenerTest extends TestCase
         array $services
     ): void {
         $matchedParams['controller'] = 'some_controller';
-        $event = $this->createMvcEvent($matchedParams, $services);
+        $event                       = $this->createMvcEvent($matchedParams, $services);
 
         $listener = new MiddlewareListener();
-        $return = $listener->onDispatch($event);
+        $return   = $listener->onDispatch($event);
 
         self::assertNull($return, 'Middleware must not be dispatched');
         self::assertNull($event->getResult(), 'Middleware must not be dispatched');
     }
 
-    public function testDoesNotAcceptMiddlewareParamAsArray() : void
+    public function testDoesNotAcceptMiddlewareParamAsArray(): void
     {
         $matchedParams = [
             'controller' => PipeSpec::class,
@@ -286,8 +285,8 @@ class MiddlewareListenerTest extends TestCase
                 },
             ],
         ];
-        $event = $this->createMvcEvent($matchedParams, []);
-        $application = $event->getApplication();
+        $event         = $this->createMvcEvent($matchedParams, []);
+        $application   = $event->getApplication();
 
         $application->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, static function (MvcEvent $e) {
             self::assertEquals(Application::ERROR_MIDDLEWARE_CANNOT_DISPATCH, $e->getError());
@@ -295,9 +294,9 @@ class MiddlewareListenerTest extends TestCase
         });
 
         $listener = new MiddlewareListener();
-        $return   = $listener->onDispatch($event);
-        self::assertInstanceOf(InvalidMiddlewareException::class, $return);
         /** @var InvalidMiddlewareException $return */
+        $return = $listener->onDispatch($event);
+        self::assertInstanceOf(InvalidMiddlewareException::class, $return);
         self::assertStringContainsString(
             'array given',
             $return->getMessage(),
@@ -307,7 +306,7 @@ class MiddlewareListenerTest extends TestCase
 
     public function testRouteMatchIsInjectedToRequestAsAttribute(): void
     {
-        $routeMatch = null;
+        $routeMatch    = null;
         $matchedParams = [
             'controller' => PipeSpec::class,
             'middleware' => new CallableMiddlewareDecorator(
@@ -324,7 +323,6 @@ class MiddlewareListenerTest extends TestCase
         $return   = $listener->onDispatch($event);
         self::assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
         self::assertInstanceOf(RouteMatch::class, $routeMatch);
-        /** @var RouteMatch $routeMatch */
         self::assertEquals($matchedParams, $routeMatch->getParams());
     }
 
@@ -343,13 +341,12 @@ class MiddlewareListenerTest extends TestCase
             'test_param' => 'test_param_value',
         ];
 
-        $event = $this->createMvcEvent($matchedParams, []);
+        $event    = $this->createMvcEvent($matchedParams, []);
         $listener = new MiddlewareListener();
         $return   = $listener->onDispatch($event);
 
         self::assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
         self::assertInstanceOf(ServerRequestInterface::class, $passedRequest);
-        /** @var ServerRequestInterface $passedRequest */
         $attributes = $passedRequest->getAttributes();
         self::assertArrayNotHasKey('test_param', $attributes);
         self::assertArrayNotHasKey('controller', $attributes);
@@ -358,14 +355,14 @@ class MiddlewareListenerTest extends TestCase
 
     public function testTriggersDispatchErrorForExceptionRaisedInMiddleware(): void
     {
-        $exception   = new Exception();
+        $exception     = new Exception();
         $matchedParams = [
             'controller' => PipeSpec::class,
             'middleware' => new CallableMiddlewareDecorator(static function () use ($exception) {
                 throw $exception;
-            })
+            }),
         ];
-        $event       = $this->createMvcEvent($matchedParams, []);
+        $event         = $this->createMvcEvent($matchedParams, []);
 
         $application = $event->getApplication();
         $application->getEventManager()
@@ -381,12 +378,12 @@ class MiddlewareListenerTest extends TestCase
 
     public function testExhaustedMiddlewarePipeTriggersDispatchError(): void
     {
-        $exception   = new Exception();
+        $exception     = new Exception();
         $matchedParams = [
             'controller' => PipeSpec::class,
             'middleware' => new PipeSpec(),
         ];
-        $event       = $this->createMvcEvent($matchedParams, []);
+        $event         = $this->createMvcEvent($matchedParams, []);
 
         $application = $event->getApplication();
         $application->getEventManager()
@@ -403,7 +400,6 @@ class MiddlewareListenerTest extends TestCase
 
     /**
      * @dataProvider validMiddlewareProvider
-     *
      * @psalm-param array<string, mixed> $matchedParams
      * @psalm-param array<string, mixed> $services
      */
@@ -415,7 +411,7 @@ class MiddlewareListenerTest extends TestCase
         $event->setError(Application::ERROR_CONTROLLER_CANNOT_DISPATCH);
 
         $listener = new MiddlewareListener();
-        $return = $listener->onDispatch($event);
+        $return   = $listener->onDispatch($event);
 
         self::assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
         self::assertSame(200, $return->getStatusCode());
@@ -424,7 +420,6 @@ class MiddlewareListenerTest extends TestCase
 
     /**
      * @dataProvider alreadySetMvcEventResultProvider
-     *
      * @param mixed $alreadySetResult
      */
     public function testWillNotDispatchWhenAnMvcEventResultIsAlreadySet($alreadySetResult): void
@@ -436,11 +431,11 @@ class MiddlewareListenerTest extends TestCase
             'controller' => PipeSpec::class,
             'middleware' => $middleware,
         ];
-        $event = $this->createMvcEvent($matchedParams, []);
+        $event         = $this->createMvcEvent($matchedParams, []);
         $event->setResult($alreadySetResult);
 
         $listener = new MiddlewareListener();
-        $return = $listener->onDispatch($event);
+        $return   = $listener->onDispatch($event);
 
         self::assertNull($return, 'Middleware must not be dispatched');
         self::assertEquals($alreadySetResult, $event->getResult());

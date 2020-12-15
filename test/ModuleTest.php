@@ -18,29 +18,27 @@ use PHPUnit\Framework\TestCase;
  */
 class ModuleTest extends TestCase
 {
-    /**
-     * @var Module
-     */
+    /** @var Module */
     private $module;
 
-    protected function setUp() : void
+    protected function setUp(): void
     {
         $this->module = new Module();
     }
 
-    public function testGetConfigReturnsArray()
+    public function testGetConfigReturnsArray(): array
     {
         $config = $this->module->getConfig();
-        $this->assertIsArray($config);
+        self::assertIsArray($config);
         return $config;
     }
 
     /**
      * @depends testGetConfigReturnsArray
      */
-    public function testReturnedArrayContainsDependencies(array $config)
+    public function testReturnedArrayContainsDependencies(array $config): void
     {
-        $this->assertArrayHasKey('service_manager', $config);
-        $this->assertIsArray($config['service_manager']);
+        self::assertArrayHasKey('service_manager', $config);
+        self::assertIsArray($config['service_manager']);
     }
 }

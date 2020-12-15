@@ -33,31 +33,23 @@ use stdClass;
  */
 class MiddlewareControllerTest extends TestCase
 {
-    /**
-     * @var MiddlewareController
-     */
+    /** @var MiddlewareController */
     private $controller;
-    /**
-     * @var MvcEvent
-     */
+    /** @var MvcEvent */
     private $event;
-    /**
-     * @var EventManagerInterface
-     */
+    /** @var EventManagerInterface */
     private $eventManager;
-    /**
-     * @var MockObject&RequestHandlerInterface
-     */
+    /** @var MockObject&RequestHandlerInterface */
     private $requestHandler;
 
     /**
      * {@inheritDoc}
      */
-    protected function setUp() : void
+    protected function setUp(): void
     {
         $this->requestHandler = $this->createMock(RequestHandlerInterface::class);
-        $this->event = new MvcEvent();
-        $this->eventManager = new EventManager();
+        $this->event          = new MvcEvent();
+        $this->eventManager   = new EventManager();
 
         $this->controller = new MiddlewareController(
             $this->requestHandler,
@@ -66,13 +58,13 @@ class MiddlewareControllerTest extends TestCase
         );
     }
 
-    public function testEMHasDeprecatedControllerIdentifier()
+    public function testEMHasDeprecatedControllerIdentifier(): void
     {
         $identifiers = $this->controller->getEventManager()->getIdentifiers();
-        $this->assertContains(DeprecatedMiddlewareController::class, $identifiers);
+        self::assertContains(DeprecatedMiddlewareController::class, $identifiers);
     }
 
-    public function testWillAssignCorrectEventManagerIdentifiers()
+    public function testWillAssignCorrectEventManagerIdentifiers(): void
     {
         $identifiers = $this->controller->getEventManager()->getIdentifiers();
 
@@ -81,11 +73,11 @@ class MiddlewareControllerTest extends TestCase
         self::assertContains(DispatchableInterface::class, $identifiers);
     }
 
-    public function testWillDispatchARequestAndSetResponseFromAGivenRequestHandler()
+    public function testWillDispatchARequestAndSetResponseFromAGivenRequestHandler(): void
     {
-        $request          = new Request();
-        $result           = $this->createMock(ResponseInterface::class);
-        /* @var callable&MockObject $dispatchListener */
+        $request = new Request();
+        $result  = $this->createMock(ResponseInterface::class);
+        /** @var callable&MockObject $dispatchListener */
         $dispatchListener = $this->getMockBuilder(stdClass::class)
             ->addMethods(['__invoke'])
             ->getMock();
@@ -118,11 +110,11 @@ class MiddlewareControllerTest extends TestCase
         self::assertSame($result, $this->event->getResult());
     }
 
-    public function testWillRefuseDispatchingInvalidRequestTypes()
+    public function testWillRefuseDispatchingInvalidRequestTypes(): void
     {
-        /* @var RequestInterface $request */
-        $request          = $this->createMock(RequestInterface::class);
-        /* @var callable|MockObject $dispatchListener */
+        /** @var RequestInterface $request */
+        $request = $this->createMock(RequestInterface::class);
+        /** @var callable|MockObject $dispatchListener */
         $dispatchListener = $this->getMockBuilder(stdClass::class)
             ->addMethods(['__invoke'])
             ->getMock();
@@ -148,9 +140,9 @@ class MiddlewareControllerTest extends TestCase
         $this->controller->dispatch($request);
     }
 
-    public function testWillSetRouteMatchAsARequestAttribute()
+    public function testWillSetRouteMatchAsARequestAttribute(): void
     {
-        $request = new Request();
+        $request    = new Request();
         $routeMatch = new RouteMatch(['middleware' => 'foo']);
         $this->event->setRouteMatch($routeMatch);
 
@@ -158,21 +150,21 @@ class MiddlewareControllerTest extends TestCase
             ->expects(self::once())
             ->method('handle')
             ->with(self::callback(function (ServerRequestInterface $request) {
+                /** @var RouteMatch $routeMatch */
                 $routeMatch = $request->getAttribute(RouteMatch::class);
                 self::assertInstanceOf(RouteMatch::class, $routeMatch);
-                /** @var RouteMatch $routeMatch */
                 self::assertSame('foo', $routeMatch->getParam('middleware'));
 
                 return true;
             }))
-            ->willReturn(self::createMock(ResponseInterface::class));
+            ->willReturn($this->createMock(ResponseInterface::class));
 
         $this->controller->dispatch($request);
     }
 
-    public function testWillNotSetRouteMatchParamsAsRequestAttributes()
+    public function testWillNotSetRouteMatchParamsAsRequestAttributes(): void
     {
-        $request = new Request();
+        $request    = new Request();
         $routeMatch = new RouteMatch(['middleware' => 'foo']);
         $this->event->setRouteMatch($routeMatch);
 
@@ -185,7 +177,7 @@ class MiddlewareControllerTest extends TestCase
 
                 return true;
             }))
-            ->willReturn(self::createMock(ResponseInterface::class));
+            ->willReturn($this->createMock(ResponseInterface::class));
 
         $this->controller->dispatch($request);
     }

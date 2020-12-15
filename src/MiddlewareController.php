@@ -18,30 +18,18 @@ use Laminas\Mvc\Exception\RuntimeException;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Psr7Bridge\Psr7ServerRequest;
 use Laminas\Router\RouteMatch;
-use Laminas\Stratigility\MiddlewarePipe;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 use function get_class;
+use function sprintf;
 
 /**
- * @internal don't use this in your codebase, or else @ocramius will hunt you
- *     down. This is just an internal hack to make middleware trigger
- *     'dispatch' events attached to the DispatchableInterface identifier.
- *
- *     Specifically, it will receive a {@see RequestHandlerInterface} and then
- *     dispatch it whilst still behaving like a normal controller. Prior to
- *     {@see RequestHandlerInterface} introduction it expected {@see MiddlewarePipe}
- *     That is needed for any events
- *     attached to the @see \Laminas\Stdlib\DispatchableInterface identifier to
- *     reach their listeners on any attached
- *     @see \Laminas\EventManager\SharedEventManagerInterface
+ * @internal
  */
 final class MiddlewareController extends AbstractController
 {
-    /**
-     * @var RequestHandlerInterface
-     */
+    /** @var RequestHandlerInterface */
     private $requestHandler;
 
     public function __construct(
@@ -49,11 +37,11 @@ final class MiddlewareController extends AbstractController
         EventManagerInterface $eventManager,
         MvcEvent $event
     ) {
-        $this->eventIdentifier   = [
+        $this->eventIdentifier = [
             DeprecatedMiddlewareController::class,
-            __CLASS__,
+            self::class,
         ];
-        $this->requestHandler = $requestHandler;
+        $this->requestHandler  = $requestHandler;
 
         $this->setEventManager($eventManager);
         $this->setEvent($event);
@@ -81,7 +69,7 @@ final class MiddlewareController extends AbstractController
     /**
      * @throws RuntimeException
      */
-    private function loadRequest() : ServerRequestInterface
+    private function loadRequest(): ServerRequestInterface
     {
         $request = $this->request;
 

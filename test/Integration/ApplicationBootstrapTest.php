@@ -22,24 +22,24 @@ class ApplicationBootstrapTest extends TestCase
 {
     use ApplicationTrait;
 
-    protected function setUp() : void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->setUpApplication();
     }
 
-    protected function tearDown() : void
+    protected function tearDown(): void
     {
         $this->tearDownApplication();
         parent::tearDown();
     }
 
-    public function testModuleReplacesDefaultMiddlewareListener()
+    public function testModuleReplacesDefaultMiddlewareListener(): void
     {
-        $container = $this->application->getServiceManager();
+        $container          = $this->application->getServiceManager();
         $middlewareListener = $container->get(DeprecatedMiddlewareListener::class);
 
-        $this->assertInstanceOf(MiddlewareListener::class, $middlewareListener);
-        $this->assertSame($middlewareListener, $container->get('MiddlewareListener'));
+        self::assertInstanceOf(MiddlewareListener::class, $middlewareListener);
+        self::assertSame($middlewareListener, $container->get('MiddlewareListener'));
     }
 }

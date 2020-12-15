@@ -36,7 +36,7 @@ class PipeSpecTest extends TestCase
                 return new Response();
             }
         };
-        $spec = new PipeSpec('container_key_string', $middleware, 'another_key');
+        $spec       = new PipeSpec('container_key_string', $middleware, 'another_key');
         self::assertSame(
             ['container_key_string', $middleware, 'another_key'],
             array_values($spec->getSpec())
@@ -45,14 +45,14 @@ class PipeSpecTest extends TestCase
 
     public function testCanBeExportedAndReimported(): void
     {
-        $middleware = static function (
+        $middleware   = static function (
             ServerRequestInterface $request,
             RequestHandlerInterface $handler
         ): ResponseInterface {
             return new Response();
         };
-        $spec = new PipeSpec('container_key_string', $middleware, 'another_key');
-        $export = VarExporter::export(
+        $spec         = new PipeSpec('container_key_string', $middleware, 'another_key');
+        $export       = VarExporter::export(
             $spec,
             VarExporter::ADD_RETURN | VarExporter::CLOSURE_SNAPSHOT_USES
         );

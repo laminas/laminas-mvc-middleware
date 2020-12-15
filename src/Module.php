@@ -19,11 +19,11 @@ class Module
     {
         return [
             'service_manager' => [
-                'aliases' => [
+                'aliases'   => [
                     DeprecatedMiddlewareListener::class => MiddlewareListener::class,
 
                     // Legacy Zend Framework aliases
-                    \Zend\Mvc\MiddlewareListener::class => DeprecatedMiddlewareListener::class,
+                    \Zend\Mvc\MiddlewareListener::class            => DeprecatedMiddlewareListener::class,
                     \Zend\Mvc\Middleware\MiddlewareListener::class => MiddlewareListener::class,
                 ],
                 'factories' => [

@@ -17,9 +17,7 @@ use Webmozart\Assert\Assert;
 
 final class PipeSpec
 {
-    /**
-     * @var array
-     */
+    /** @var array */
     private $spec;
 
     /**

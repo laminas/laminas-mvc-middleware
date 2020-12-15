@@ -17,27 +17,27 @@ use LaminasTest\Mvc\Middleware\Integration\TestAsset\NoopSendResponseListener;
 
 trait ApplicationTrait
 {
-    /**
-     * @var Application
-     */
+    /** @var Application */
     protected $application;
 
     /**
      * Fail test with exception message if mvc error event is triggered.
+     *
+     * @var bool
      */
     protected $failOnErrorEvents = true;
 
-    protected function setUpApplication(array $extraConfig = [])
+    protected function setUpApplication(array $extraConfig = []): Application
     {
         $extraConfig['service_manager']['services'][SendResponseListener::class] = new NoopSendResponseListener();
-        $config = [
-            'modules' => [
+        $config            = [
+            'modules'                 => [
                 'Laminas\Router',
                 'Laminas\Mvc\Middleware',
             ],
             'module_listener_options' => [
                 'config_cache_enabled' => false,
-                'extra_config' => $extraConfig,
+                'extra_config'         => $extraConfig,
             ],
         ];
         $this->application = Application::init($config);
@@ -60,9 +60,9 @@ trait ApplicationTrait
         return $this->application;
     }
 
-    protected function tearDownApplication()
+    protected function tearDownApplication(): void
     {
-        $this->application = null;
+        $this->application       = null;
         $this->failOnErrorEvents = true;
     }
 }

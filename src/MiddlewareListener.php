@@ -13,7 +13,6 @@ namespace Laminas\Mvc\Middleware;
 use Closure;
 use Laminas\EventManager\AbstractListenerAggregate;
 use Laminas\EventManager\EventManagerInterface;
-use Laminas\Http\Response;
 use Laminas\Mvc\Application;
 use Laminas\Mvc\Exception\InvalidMiddlewareException;
 use Laminas\Mvc\MvcEvent;
@@ -31,13 +30,14 @@ use function get_class;
 use function gettype;
 use function is_object;
 use function is_string;
+use function sprintf;
 
 class MiddlewareListener extends AbstractListenerAggregate
 {
     /**
      * {@inheritDoc}
      */
-    public function attach(EventManagerInterface $events, $priority = 1) : void
+    public function attach(EventManagerInterface $events, $priority = 1): void
     {
         $this->listeners[] = $events->attach(MvcEvent::EVENT_DISPATCH, [$this, 'onDispatch'], 1);
     }
@@ -45,7 +45,7 @@ class MiddlewareListener extends AbstractListenerAggregate
     /**
      * Listen to the "dispatch" event
      *
-     * @return null|Response|mixed
+     * @return mixed
      */
     public function onDispatch(MvcEvent $event)
     {
@@ -60,7 +60,7 @@ class MiddlewareListener extends AbstractListenerAggregate
 
         $middleware = $routeMatch->getParam('middleware', null);
 
-        $request        = $event->getRequest();
+        $request = $event->getRequest();
         /** @var Application $application */
         $application    = $event->getApplication();
         $response       = $application->getResponse();
@@ -184,7 +184,7 @@ class MiddlewareListener extends AbstractListenerAggregate
         string $middlewareName,
         MvcEvent $event,
         Application $application,
-        Throwable $exception = null
+        ?Throwable $exception = null
     ) {
         $event->setName(MvcEvent::EVENT_DISPATCH_ERROR);
         $event->setError($type);
@@ -205,8 +205,8 @@ class MiddlewareListener extends AbstractListenerAggregate
 
     /**
      * @return MiddlewareInterface|RequestHandlerInterface
-     * @throws InvalidMiddlewareException When container has no entry or returned entry is not an instance of PSR
-     * middleware or handler
+     * @throws InvalidMiddlewareException When container has no entry or returned
+     *      entry is not an instance of PSR middleware or handler.
      */
     private function middlewareFromContainer(ContainerInterface $container, string $middlewareName)
     {

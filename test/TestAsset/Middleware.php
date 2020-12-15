@@ -21,7 +21,7 @@ class Middleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = new Response();
-        $response->getBody()->write(__CLASS__);
+        $response->getBody()->write(self::class);
         return $response;
     }
 }

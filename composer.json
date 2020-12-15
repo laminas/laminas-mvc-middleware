@@ -40,7 +40,7 @@
     "require-dev": {
         "brick/varexporter": "^0.3.2",
         "container-interop/container-interop": "^1.2",
-        "laminas/laminas-coding-standard": "~1.0.0",
+        "laminas/laminas-coding-standard": "^2.1",
         "laminas/laminas-diactoros": "^2.4",
         "laminas/laminas-router": "^3.3",
         "phpspec/prophecy-phpunit": "^2.0",

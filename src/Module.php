@@ -11,7 +11,6 @@ declare(strict_types=1);
 namespace Laminas\Mvc\Middleware;
 
 use Laminas\Mvc\MiddlewareListener as DeprecatedMiddlewareListener;
-use Laminas\ServiceManager\Factory\InvokableFactory;
 
 class Module
 {
@@ -27,7 +26,7 @@ class Module
                     \Zend\Mvc\Middleware\MiddlewareListener::class => MiddlewareListener::class,
                 ],
                 'factories' => [
-                    MiddlewareListener::class => InvokableFactory::class,
+                    MiddlewareListener::class => MiddlewareListenerFactory::class,
                 ],
             ],
         ];

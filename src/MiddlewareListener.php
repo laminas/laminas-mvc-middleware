@@ -10,29 +10,24 @@ declare(strict_types=1);
 
 namespace Laminas\Mvc\Middleware;
 
-use Closure;
 use Laminas\EventManager\AbstractListenerAggregate;
 use Laminas\EventManager\EventManagerInterface;
 use Laminas\Mvc\Application;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Psr7Bridge\Psr7Response;
-use Laminas\Stratigility\Middleware\CallableMiddlewareDecorator;
-use Laminas\Stratigility\Middleware\RequestHandlerMiddleware;
-use Laminas\Stratigility\MiddlewarePipe;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
-
-use function get_class;
-use function gettype;
-use function is_object;
-use function is_string;
-use function sprintf;
 
 class MiddlewareListener extends AbstractListenerAggregate
 {
+    /** @var HandlerFromPipeSpecFactory */
+    private $pipeSpecFactory;
+
+    public function __construct(HandlerFromPipeSpecFactory $pipeSpecFactory)
+    {
+        $this->pipeSpecFactory = $pipeSpecFactory;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -66,7 +61,7 @@ class MiddlewareListener extends AbstractListenerAggregate
         $serviceManager = $application->getServiceManager();
 
         try {
-            $pipe = $this->createPipeFromSpec($serviceManager, $middleware);
+            $pipe = $this->pipeSpecFactory->createFromMiddlewareParam($serviceManager, $middleware);
         } catch (InvalidMiddlewareException $invalidMiddlewareException) {
             $return = $this->marshalInvalidMiddleware(
                 Application::ERROR_MIDDLEWARE_CANNOT_DISPATCH,
@@ -110,70 +105,6 @@ class MiddlewareListener extends AbstractListenerAggregate
     }
 
     /**
-     * Create a middleware pipe from the spec given.
-     *
-     * @param string|MiddlewareInterface|RequestHandlerInterface|PipeSpec|mixed $middlewarePipeSpec
-     * @throws InvalidMiddlewareException
-     */
-    private function createPipeFromSpec(
-        ContainerInterface $container,
-        $middlewarePipeSpec
-    ): RequestHandlerInterface {
-        if (is_string($middlewarePipeSpec)) {
-            $middlewarePipeSpec = $this->middlewareFromContainer($container, $middlewarePipeSpec);
-        }
-        if ($middlewarePipeSpec instanceof RequestHandlerInterface) {
-            return $middlewarePipeSpec;
-        }
-
-        if ($middlewarePipeSpec instanceof MiddlewareInterface) {
-            $middlewarePipeSpec = new PipeSpec($middlewarePipeSpec);
-        } elseif (! $middlewarePipeSpec instanceof PipeSpec) {
-            throw new InvalidMiddlewareException(sprintf(
-                'Route match parameter "middleware" must be one of: string container id, %s, %s or %s; %s given',
-                MiddlewareInterface::class,
-                RequestHandlerInterface::class,
-                PipeSpec::class,
-                is_object($middlewarePipeSpec) ? get_class($middlewarePipeSpec) : gettype($middlewarePipeSpec)
-            ));
-        }
-
-        // Pipe has implicit empty pipeline handler
-        $pipe = new MiddlewarePipe();
-        foreach ($middlewarePipeSpec->getSpec() as $middlewareToBePiped) {
-            if (null === $middlewareToBePiped) {
-                throw InvalidMiddlewareException::fromNull();
-            }
-
-            $middlewareName = is_object($middlewareToBePiped)
-                ? get_class($middlewareToBePiped)
-                : gettype($middlewareToBePiped);
-
-            if (is_string($middlewareToBePiped)) {
-                $middlewareToBePiped = $this->middlewareFromContainer($container, $middlewareToBePiped);
-            }
-
-            if ($middlewareToBePiped instanceof Closure) {
-                $pipe->pipe(new CallableMiddlewareDecorator($middlewareToBePiped));
-                continue;
-            }
-
-            if ($middlewareToBePiped instanceof MiddlewareInterface) {
-                $pipe->pipe($middlewareToBePiped);
-                continue;
-            }
-            if ($middlewareToBePiped instanceof RequestHandlerInterface) {
-                $middlewareToBePiped = new RequestHandlerMiddleware($middlewareToBePiped);
-                $pipe->pipe($middlewareToBePiped);
-                break; // request handler will always stop pipe processing. Rest of the pipe can be ignored
-            }
-
-            throw InvalidMiddlewareException::fromMiddlewareName($middlewareName);
-        }
-        return $pipe;
-    }
-
-    /**
      * Marshal a middleware not callable exception event
      *
      * @return mixed
@@ -200,22 +131,5 @@ class MiddlewareListener extends AbstractListenerAggregate
             $return = $event->getResult();
         }
         return $return;
-    }
-
-    /**
-     * @return MiddlewareInterface|RequestHandlerInterface
-     * @throws InvalidMiddlewareException When container has no entry or returned
-     *      entry is not an instance of PSR middleware or handler.
-     */
-    private function middlewareFromContainer(ContainerInterface $container, string $middlewareName)
-    {
-        if (! $container->has($middlewareName)) {
-            throw InvalidMiddlewareException::fromMiddlewareName($middlewareName);
-        }
-        $middleware = $container->get($middlewareName);
-        if (! $middleware instanceof MiddlewareInterface && ! $middleware instanceof RequestHandlerInterface) {
-            throw InvalidMiddlewareException::fromMiddlewareName($middlewareName);
-        }
-        return $middleware;
     }
 }

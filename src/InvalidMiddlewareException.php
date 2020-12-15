@@ -10,8 +10,14 @@ declare(strict_types=1);
 
 namespace Laminas\Mvc\Middleware;
 
+use Closure;
 use Laminas\Mvc\Exception\InvalidMiddlewareException as DeprecatedMiddlewareException;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
+use function get_class;
+use function gettype;
+use function is_object;
 use function sprintf;
 
 final class InvalidMiddlewareException extends DeprecatedMiddlewareException
@@ -24,14 +30,37 @@ final class InvalidMiddlewareException extends DeprecatedMiddlewareException
      */
     public static function fromMiddlewareName($middlewareName): self
     {
-        $instance                 = new self(sprintf('Cannot dispatch middleware %s', $middlewareName));
+        $middlewareName = (string) $middlewareName;
+        $instance       = new self(sprintf('Cannot dispatch middleware %s', $middlewareName));
+
         $instance->middlewareName = $middlewareName;
         return $instance;
     }
 
-    public static function fromNull(): self
+    /**
+     * @param mixed $invalidMiddleware
+     */
+    public static function fromInvalidType($invalidMiddleware, ?string $name = ''): self
     {
-        return new self('Middleware name cannot be null');
+        $actual   = is_object($invalidMiddleware) ? get_class($invalidMiddleware) : gettype($invalidMiddleware);
+        $instance = new self(sprintf(
+            'Middleware in pipe spec can be one of: string container id, %s %s, or %s; %s given',
+            MiddlewareInterface::class,
+            RequestHandlerInterface::class,
+            Closure::class,
+            $actual
+        ));
+
+        $instance->middlewareName = $name;
+        return $instance;
+    }
+
+    public static function fromMissingInContainer(string $id): self
+    {
+        $instance = new self(sprintf('Middleware with id %s could not be found in container', $id));
+
+        $instance->middlewareName = $id;
+        return $instance;
     }
 
     public function toMiddlewareName(): string

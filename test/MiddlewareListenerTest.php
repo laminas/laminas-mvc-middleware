@@ -16,6 +16,7 @@ use Laminas\EventManager\EventManager;
 use Laminas\Http\Request;
 use Laminas\Http\Response;
 use Laminas\Mvc\Application;
+use Laminas\Mvc\Middleware\HandlerFromPipeSpecFactory;
 use Laminas\Mvc\Middleware\InvalidMiddlewareException;
 use Laminas\Mvc\Middleware\MiddlewareListener;
 use Laminas\Mvc\Middleware\PipeSpec;
@@ -236,7 +237,7 @@ class MiddlewareListenerTest extends TestCase
     ): void {
         $event = $this->createMvcEvent($matchedParams, $services);
 
-        $listener = new MiddlewareListener();
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
 
         self::assertInstanceOf(
@@ -261,7 +262,7 @@ class MiddlewareListenerTest extends TestCase
         $matchedParams['controller'] = 'some_controller';
         $event                       = $this->createMvcEvent($matchedParams, $services);
 
-        $listener = new MiddlewareListener();
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
 
         self::assertNull($return, 'Middleware must not be dispatched');
@@ -293,7 +294,7 @@ class MiddlewareListenerTest extends TestCase
             return $e->getParam('exception');
         });
 
-        $listener = new MiddlewareListener();
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         /** @var InvalidMiddlewareException $return */
         $return = $listener->onDispatch($event);
         self::assertInstanceOf(InvalidMiddlewareException::class, $return);
@@ -319,7 +320,7 @@ class MiddlewareListenerTest extends TestCase
 
         $event = $this->createMvcEvent($matchedParams, []);
 
-        $listener = new MiddlewareListener();
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
         self::assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
         self::assertInstanceOf(RouteMatch::class, $routeMatch);
@@ -342,7 +343,7 @@ class MiddlewareListenerTest extends TestCase
         ];
 
         $event    = $this->createMvcEvent($matchedParams, []);
-        $listener = new MiddlewareListener();
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
 
         self::assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
@@ -371,7 +372,7 @@ class MiddlewareListenerTest extends TestCase
                 return $e->getParam('exception');
             });
 
-        $listener = new MiddlewareListener();
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
         self::assertSame($exception, $return, 'Thrown exception must be provided as MvcEvent exception parameter');
     }
@@ -392,7 +393,7 @@ class MiddlewareListenerTest extends TestCase
                 return 'Dispatch error triggered';
             });
 
-        $listener = new MiddlewareListener();
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
         self::assertSame('Dispatch error triggered', $return);
         self::assertInstanceOf(EmptyPipelineException::class, $event->getParam('exception'));
@@ -410,7 +411,7 @@ class MiddlewareListenerTest extends TestCase
         $event = $this->createMvcEvent($matchedParams, $services);
         $event->setError(Application::ERROR_CONTROLLER_CANNOT_DISPATCH);
 
-        $listener = new MiddlewareListener();
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
 
         self::assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
@@ -434,7 +435,7 @@ class MiddlewareListenerTest extends TestCase
         $event         = $this->createMvcEvent($matchedParams, []);
         $event->setResult($alreadySetResult);
 
-        $listener = new MiddlewareListener();
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
 
         self::assertNull($return, 'Middleware must not be dispatched');

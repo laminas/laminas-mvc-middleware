@@ -6,6 +6,8 @@
  * @license   https://github.com/laminas/laminas-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
+declare(strict_types=1);
+
 namespace LaminasTest\Mvc\Middleware\Integration;
 
 use Laminas\Mvc\Middleware\MiddlewareListener;
@@ -20,24 +22,24 @@ class ApplicationBootstrapTest extends TestCase
 {
     use ApplicationTrait;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->setUpApplication();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->tearDownApplication();
         parent::tearDown();
     }
 
-    public function testModuleReplacesDefaultMiddlewareListener()
+    public function testModuleReplacesDefaultMiddlewareListener(): void
     {
-        $container = $this->application->getServiceManager();
+        $container          = $this->application->getServiceManager();
         $middlewareListener = $container->get(DeprecatedMiddlewareListener::class);
 
-        $this->assertInstanceOf(MiddlewareListener::class, $middlewareListener);
-        $this->assertSame($middlewareListener, $container->get('MiddlewareListener'));
+        self::assertInstanceOf(MiddlewareListener::class, $middlewareListener);
+        self::assertSame($middlewareListener, $container->get('MiddlewareListener'));
     }
 }

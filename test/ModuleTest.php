@@ -6,6 +6,8 @@
  * @license   https://github.com/laminas/laminas-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
+declare(strict_types=1);
+
 namespace LaminasTest\Mvc\Middleware;
 
 use Laminas\Mvc\Middleware\Module;
@@ -16,29 +18,27 @@ use PHPUnit\Framework\TestCase;
  */
 class ModuleTest extends TestCase
 {
-    /**
-     * @var Module
-     */
+    /** @var Module */
     private $module;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->module = new Module();
     }
 
-    public function testGetConfigReturnsArray()
+    public function testGetConfigReturnsArray(): array
     {
         $config = $this->module->getConfig();
-        $this->assertInternalType('array', $config);
+        self::assertIsArray($config);
         return $config;
     }
 
     /**
      * @depends testGetConfigReturnsArray
      */
-    public function testReturnedArrayContainsDependencies(array $config)
+    public function testReturnedArrayContainsDependencies(array $config): void
     {
-        $this->assertArrayHasKey('service_manager', $config);
-        $this->assertInternalType('array', $config['service_manager']);
+        self::assertArrayHasKey('service_manager', $config);
+        self::assertIsArray($config['service_manager']);
     }
 }

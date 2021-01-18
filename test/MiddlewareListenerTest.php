@@ -6,62 +6,51 @@
  * @license   https://github.com/laminas/laminas-mvc-middleware/blob/master/LICENSE.md New BSD License
  */
 
+declare(strict_types=1);
+
 namespace LaminasTest\Mvc\Middleware;
 
 use Exception;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Laminas\Diactoros\Response as DiactorosResponse;
-use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\EventManager\EventManager;
-use Laminas\EventManager\SharedEventManager;
 use Laminas\Http\Request;
 use Laminas\Http\Response;
 use Laminas\Mvc\Application;
-use Laminas\Mvc\Exception\InvalidMiddlewareException;
-use Laminas\Mvc\Exception\ReachedFinalHandlerException;
+use Laminas\Mvc\Middleware\HandlerFromPipeSpecFactory;
+use Laminas\Mvc\Middleware\InvalidMiddlewareException;
 use Laminas\Mvc\Middleware\MiddlewareListener;
+use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Router\RouteMatch;
 use Laminas\ServiceManager\ServiceManager;
-use Laminas\Stdlib\DispatchableInterface;
+use Laminas\Stratigility\Exception\EmptyPipelineException;
 use Laminas\Stratigility\Middleware\CallableMiddlewareDecorator;
-use Laminas\Stratigility\Middleware\DoublePassMiddlewareDecorator;
 use Laminas\View\Model\ModelInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\ObjectProphecy;
-use Psr\Container\ContainerInterface;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use stdClass;
-
-use function is_callable;
-use function sprintf;
-use function uniqid;
 
 /**
  * @covers \Laminas\Mvc\Middleware\MiddlewareListener
  */
 class MiddlewareListenerTest extends TestCase
 {
-    /**
-     * @var ObjectProphecy
-     */
-    private $routeMatch;
+    use ProphecyTrait;
 
     /**
      * Create an MvcEvent, populated with everything it needs.
      *
-     * @param string $middlewareMatched Middleware service matched by routing
-     * @param mixed $middleware Value to return for middleware service
-     * @return MvcEvent
+     * @psalm-param array<string, mixed> $matchedParams
+     * @psalm-param array<string, mixed> $services
      */
-    public function createMvcEvent($middlewareMatched, $middleware = null)
+    public function createMvcEvent(array $matchedParams, array $services = []): MvcEvent
     {
-        $response = new Response();
-        $this->routeMatch = $this->prophesize(RouteMatch::class);
-        $this->routeMatch->getParam('middleware', false)->willReturn($middlewareMatched);
-        $this->routeMatch->getParams()->willReturn([]);
+        $response   = new Response();
+        $routeMatch = new RouteMatch($matchedParams);
 
         $eventManager   = new EventManager();
         $serviceManager = new ServiceManager([
@@ -70,9 +59,7 @@ class MiddlewareListenerTest extends TestCase
                     return new EventManager();
                 },
             ],
-            'services' => [
-                $middlewareMatched => $middleware,
-            ],
+            'services'  => $services,
         ]);
 
         $application = $this->prophesize(Application::class);
@@ -84,429 +71,381 @@ class MiddlewareListenerTest extends TestCase
         $event->setRequest(new Request());
         $event->setResponse($response);
         $event->setApplication($application->reveal());
-        $event->setRouteMatch($this->routeMatch->reveal());
+        $event->setRouteMatch($routeMatch);
 
         return $event;
     }
 
-    public function testSuccessfullyDispatchesMiddleware()
+    public function validMiddlewareProvider(): iterable
     {
-        $event = $this->createMvcEvent('path', new DoublePassMiddlewareDecorator(function ($request, $response) {
-            $this->assertInstanceOf(ServerRequestInterface::class, $request);
-            $this->assertInstanceOf(ResponseInterface::class, $response);
-            $response->getBody()->write('Test!');
-            return $response;
-        }, new DiactorosResponse()));
-        $application = $event->getApplication();
-
-        $application->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
-            $this->fail(sprintf('dispatch.error triggered when it should not be: %s', var_export($e->getError(), 1)));
-        });
-
-        $listener = new MiddlewareListener();
-        $return = $listener->onDispatch($event);
-        $this->assertInstanceOf(Response::class, $return);
-
-        $this->assertInstanceOf(Response::class, $return);
-        $this->assertSame(200, $return->getStatusCode());
-        $this->assertEquals('Test!', $return->getBody());
-    }
-
-    public function testSuccessfullyDispatchesHttpInteropMiddleware()
-    {
-        $expectedOutput = uniqid('expectedOutput', true);
-
-        $middleware = $this->createMock(MiddlewareInterface::class);
-        $middleware->expects($this->once())->method('process')->willReturn(new HtmlResponse($expectedOutput));
-
-        $event = $this->createMvcEvent('path', $middleware);
-        $application = $event->getApplication();
-
-        $application->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
-            $this->fail(sprintf('dispatch.error triggered when it should not be: %s', var_export($e->getError(), 1)));
-        });
-
-        $listener = new MiddlewareListener();
-        $return   = $listener->onDispatch($event);
-        $this->assertInstanceOf(Response::class, $return);
-
-        $this->assertSame(200, $return->getStatusCode());
-        $this->assertEquals($expectedOutput, $return->getBody());
-    }
-
-    public function testMatchedRouteParamsAreInjectedToRequestAsAttributes()
-    {
-        $matchedRouteParam = uniqid('matched param', true);
-        $routeAttribute = null;
-
-        $event = $this->createMvcEvent(
-            'foo',
-            new DoublePassMiddlewareDecorator(function ($request, ResponseInterface $response) use (&$routeAttribute) {
-                $routeAttribute = $request->getAttribute(RouteMatch::class);
-                $response->getBody()->write($request->getAttribute('myParam', 'param did not exist'));
+        // Remember that mutable body writes are bad!
+        $middleware             = new class implements MiddlewareInterface {
+            public function process(
+                ServerRequestInterface $request,
+                RequestHandlerInterface $handler
+            ): ResponseInterface {
+                $response = $handler->handle($request);
+                $response->getBody()->write('Middleware!');
                 return $response;
-            }, new DiactorosResponse())
-        );
+            }
+        };
+        $directReturnMiddleware = new class implements MiddlewareInterface {
+            public function process(
+                ServerRequestInterface $request,
+                RequestHandlerInterface $handler
+            ): ResponseInterface {
+                $response = new DiactorosResponse();
+                $response->getBody()->write('Middleware!');
+                return $response;
+            }
+        };
+        $handler                = new class implements RequestHandlerInterface {
+            public function handle(
+                ServerRequestInterface $request
+            ): ResponseInterface {
+                $response = new DiactorosResponse();
+                $response->getBody()->write('Handler!');
+                return $response;
+            }
+        };
+        $middlewareWithHandler  = new class implements MiddlewareInterface, RequestHandlerInterface {
+            public function process(
+                ServerRequestInterface $request,
+                RequestHandlerInterface $handler
+            ): ResponseInterface {
+                $response = new DiactorosResponse();
+                $response->getBody()->write('Middleware!');
+                return $response;
+            }
 
-        $this->routeMatch->getParams()->willReturn([
-            'myParam' => $matchedRouteParam,
-        ]);
+            public function handle(
+                ServerRequestInterface $request
+            ): ResponseInterface {
+                $response = new DiactorosResponse();
+                $response->getBody()->write('Handler!');
+                return $response;
+            }
+        };
+        $closureMiddleware      = static function (
+            ServerRequestInterface $request,
+            RequestHandlerInterface $handler
+        ): ResponseInterface {
+            $response = $handler->handle($request);
+            $response->getBody()->write('Closure Middleware!');
+            return $response;
+        };
+        $containerMiddleware    = new class implements MiddlewareInterface {
+            public function process(
+                ServerRequestInterface $request,
+                RequestHandlerInterface $handler
+            ): ResponseInterface {
+                $response = $handler->handle($request);
+                $response->getBody()->write('Container Middleware!');
+                return $response;
+            }
+        };
+        $containerHandler       = new class implements RequestHandlerInterface {
+            public function handle(
+                ServerRequestInterface $request
+            ): ResponseInterface {
+                $response = new DiactorosResponse();
+                $response->getBody()->write('Container Handler!');
+                return $response;
+            }
+        };
 
-        $listener = new MiddlewareListener();
-        $return   = $listener->onDispatch($event);
-        $this->assertInstanceOf(Response::class, $return);
-        $this->assertSame($matchedRouteParam, $return->getBody());
-        $this->assertSame($this->routeMatch->reveal(), $routeAttribute);
-    }
-
-    public function testSuccessfullyDispatchesPipeOfCallableAndHttpInteropStyleMiddlewares()
-    {
-        $response   = new Response();
-        $routeMatch = $this->prophesize(RouteMatch::class);
-        $routeMatch->getParams()->willReturn([]);
-        $routeMatch->getParam('middleware', false)->willReturn([
-            'firstMiddleware',
-            'secondMiddleware',
-        ]);
-
-        $eventManager = new EventManager();
-
-        $serviceManager = $this->prophesize(ContainerInterface::class);
-        $serviceManager->get('EventManager')->willReturn($eventManager);
-        $serviceManager->has('firstMiddleware')->willReturn(true);
-        $serviceManager->get('firstMiddleware')->willReturn(
-            new DoublePassMiddlewareDecorator(function ($request, $response, $next) {
-                $this->assertInstanceOf(ServerRequestInterface::class, $request);
-                $this->assertInstanceOf(ResponseInterface::class, $response);
-                $this->assertTrue(is_callable($next));
-                return $next($request->withAttribute('firstMiddlewareAttribute', 'firstMiddlewareValue'), $response);
-            }, new DiactorosResponse())
-        );
-
-        $secondMiddleware = $this->createMock(MiddlewareInterface::class);
-        $secondMiddleware->expects($this->once())
-            ->method('process')
-            ->willReturnCallback(function (ServerRequestInterface $request) {
-                return new HtmlResponse($request->getAttribute('firstMiddlewareAttribute'));
-            });
-
-        $serviceManager->has('secondMiddleware')->willReturn(true);
-        $serviceManager->get('secondMiddleware')->willReturn($secondMiddleware);
-
-        $application = $this->prophesize(Application::class);
-        $application->getEventManager()->willReturn($eventManager);
-        $application->getServiceManager()->will(function () use ($serviceManager) {
-            return $serviceManager->reveal();
-        });
-        $application->getResponse()->willReturn($response);
-
-        $event = new MvcEvent();
-        $event->setRequest(new Request());
-        $event->setResponse($response);
-        $event->setApplication($application->reveal());
-        $event->setRouteMatch($routeMatch->reveal());
-
-        $event->getApplication()->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
-            $this->fail(sprintf('dispatch.error triggered when it should not be: %s', var_export($e->getError(), 1)));
-        });
-
-        $listener = new MiddlewareListener();
-        $return   = $listener->onDispatch($event);
-        $this->assertInstanceOf(Response::class, $return);
-
-        $this->assertSame(200, $return->getStatusCode());
-        $this->assertEquals('firstMiddlewareValue', $return->getBody());
-    }
-
-    public function testTriggersErrorForUncallableMiddleware()
-    {
-        $event       = $this->createMvcEvent('path');
-        $application = $event->getApplication();
-
-        $application->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
-            $this->assertEquals(Application::ERROR_MIDDLEWARE_CANNOT_DISPATCH, $e->getError());
-            $this->assertEquals('path', $e->getController());
-            return 'FAILED';
-        });
-
-        $listener = new MiddlewareListener();
-        $return   = $listener->onDispatch($event);
-        $this->assertEquals('FAILED', $return);
-    }
-
-    public function testTriggersErrorForExceptionRaisedInMiddleware()
-    {
-        $exception   = new Exception();
-        $event       = $this->createMvcEvent('path', new CallableMiddlewareDecorator(function () use ($exception) {
-            throw $exception;
-        }));
-
-        $application = $event->getApplication();
-        $application->getEventManager()
-            ->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) use ($exception) {
-                $this->assertEquals(Application::ERROR_EXCEPTION, $e->getError());
-                $this->assertSame($exception, $e->getParam('exception'));
-                return 'FAILED';
-            });
-
-        $listener = new MiddlewareListener();
-        $return   = $listener->onDispatch($event);
-        $this->assertEquals('FAILED', $return);
+        yield 'middleware as container key string' => [
+            [
+                'controller' => PipeSpec::class,
+                'middleware' => 'middleware_container_key',
+            ],
+            [
+                'middleware_container_key' => $directReturnMiddleware,
+            ],
+            'Middleware!',
+        ];
+        yield 'middleware as middleware instance' => [
+            [
+                'controller' => PipeSpec::class,
+                'middleware' => $directReturnMiddleware,
+            ],
+            [],
+            'Middleware!',
+        ];
+        yield 'middleware as handler instance' => [
+            [
+                'controller' => PipeSpec::class,
+                'middleware' => $handler,
+            ],
+            [],
+            'Handler!',
+        ];
+        yield 'middleware as middleware+handler instance uses handler' => [
+            [
+                'controller' => PipeSpec::class,
+                'middleware' => $middlewareWithHandler,
+            ],
+            [],
+            'Handler!',
+        ];
+        yield 'middleware as PipeSpec with middleware+handler instance uses middleware' => [
+            [
+                'controller' => PipeSpec::class,
+                'middleware' => new PipeSpec($middlewareWithHandler),
+            ],
+            [],
+            'Middleware!',
+        ];
+        yield 'middleware as PipeSpec' => [
+            [
+                'controller' => PipeSpec::class,
+                'middleware' => new PipeSpec(
+                    $middleware,
+                    $handler
+                ),
+            ],
+            [],
+            'Handler!Middleware!',
+        ];
+        yield 'middleware as PipeSpec with all supported types' => [
+            [
+                'controller' => PipeSpec::class,
+                'middleware' => new PipeSpec(
+                    $middleware,
+                    'middleware_container_key',
+                    $closureMiddleware,
+                    'handler_container_key'
+                ),
+            ],
+            [
+                'middleware_container_key' => $containerMiddleware,
+                'handler_container_key'    => $containerHandler,
+            ],
+            'Container Handler!Closure Middleware!Container Middleware!Middleware!',
+        ];
     }
 
     /**
-     * Ensure that the listener tests for services in abstract factories.
+     * @dataProvider validMiddlewareProvider
+     * @psalm-param array<string, mixed> $matchedParams
+     * @psalm-param array<string, mixed> $services
      */
-    public function testCanLoadFromAbstractFactory()
-    {
-        $response   = new Response();
-        $routeMatch = $this->prophesize(RouteMatch::class);
-        $routeMatch->getParam('middleware', false)->willReturn('test');
-        $routeMatch->getParams()->willReturn([]);
+    public function testSuccessfullyDispatchesMiddlewareAndReturnsResponse(
+        array $matchedParams,
+        array $services,
+        string $expectedBody
+    ): void {
+        $event = $this->createMvcEvent($matchedParams, $services);
 
-        $eventManager = new EventManager();
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
+        $return   = $listener->onDispatch($event);
 
-        $serviceManager = new ServiceManager();
-        $serviceManager->addAbstractFactory(TestAsset\MiddlewareAbstractFactory::class);
-        $serviceManager->setFactory(
-            'EventManager',
-            function () {
-                return new EventManager();
-            }
+        self::assertInstanceOf(
+            Response::class,
+            $return,
+            (string) $event->getParam('exception', 'Middleware dispatch failed')
         );
-
-        $application = $this->prophesize(Application::class);
-        $application->getEventManager()->willReturn($eventManager);
-        $application->getServiceManager()->willReturn($serviceManager);
-        $application->getResponse()->willReturn($response);
-
-        $event = new MvcEvent();
-        $event->setRequest(new Request());
-        $event->setResponse($response);
-        $event->setApplication($application->reveal());
-        $event->setRouteMatch($routeMatch->reveal());
-
-        $eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
-            $this->fail(sprintf('dispatch.error triggered when it should not be: %s', var_export($e->getError(), 1)));
-        });
-
-        $listener = new MiddlewareListener();
-        $return   = $listener->onDispatch($event);
-
-        $this->assertInstanceOf(Response::class, $return);
-        $this->assertSame(200, $return->getStatusCode());
-        $this->assertEquals(TestAsset\Middleware::class, $return->getBody());
+        self::assertSame(200, $return->getStatusCode());
+        self::assertEquals($expectedBody, $return->getBody());
+        self::assertNull($event->getParam('exception'));
     }
 
-    public function testMiddlewareWithNothingPipedReachesFinalHandlerException()
-    {
-        $response   = new Response();
-        $routeMatch = $this->prophesize(RouteMatch::class);
-        $routeMatch->getParams()->willReturn([]);
-        $routeMatch->getParam('middleware', false)->willReturn([]);
+    /**
+     * @dataProvider validMiddlewareProvider
+     * @psalm-param array<string, mixed> $matchedParams
+     * @psalm-param array<string, mixed> $services
+     */
+    public function testIgnoresMiddlewareParamIfControllerMarkerIsNotPipeSpec(
+        array $matchedParams,
+        array $services
+    ): void {
+        $matchedParams['controller'] = 'some_controller';
+        $event                       = $this->createMvcEvent($matchedParams, $services);
 
-        $eventManager = new EventManager();
-
-        $serviceManager = $this->prophesize(ContainerInterface::class);
-        $application = $this->prophesize(Application::class);
-        $application->getEventManager()->willReturn($eventManager);
-        $application->getServiceManager()->will(function () use ($serviceManager) {
-            return $serviceManager->reveal();
-        });
-        $application->getResponse()->willReturn($response);
-
-        $serviceManager->get('EventManager')->willReturn($eventManager);
-
-        $event = new MvcEvent();
-        $event->setRequest(new Request());
-        $event->setResponse($response);
-        $event->setApplication($application->reveal());
-        $event->setRouteMatch($routeMatch->reveal());
-
-        $event->getApplication()->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
-            $this->assertEquals(Application::ERROR_EXCEPTION, $e->getError());
-            $this->assertInstanceOf(ReachedFinalHandlerException::class, $e->getParam('exception'));
-            return 'FAILED';
-        });
-
-        $listener = new MiddlewareListener();
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
-        $this->assertEquals('FAILED', $return);
+
+        self::assertNull($return, 'Middleware must not be dispatched');
+        self::assertNull($event->getResult(), 'Middleware must not be dispatched');
     }
 
-    public function testNullMiddlewareThrowsInvalidMiddlewareException()
+    public function testDoesNotAcceptMiddlewareParamAsArray(): void
     {
-        $response   = new Response();
-        $routeMatch = $this->prophesize(RouteMatch::class);
-        $routeMatch->getParams()->willReturn([]);
-        $routeMatch->getParam('middleware', false)->willReturn([null]);
+        $matchedParams = [
+            'controller' => PipeSpec::class,
+            'middleware' => [
+                new class implements MiddlewareInterface {
+                    public function process(
+                        ServerRequestInterface $request,
+                        RequestHandlerInterface $handler
+                    ): ResponseInterface {
+                        $response = new DiactorosResponse();
+                        $response->getBody()->write('Test!');
+                        return $response;
+                    }
+                },
+            ],
+        ];
+        $event         = $this->createMvcEvent($matchedParams, []);
+        $application   = $event->getApplication();
 
-        $eventManager = new EventManager();
-
-        $serviceManager = $this->prophesize(ContainerInterface::class);
-        $application = $this->prophesize(Application::class);
-        $application->getEventManager()->willReturn($eventManager);
-        $application->getServiceManager()->will(function () use ($serviceManager) {
-            return $serviceManager->reveal();
-        });
-        $application->getResponse()->willReturn($response);
-
-        $event = new MvcEvent();
-        $event->setRequest(new Request());
-        $event->setResponse($response);
-        $event->setApplication($application->reveal());
-        $event->setRouteMatch($routeMatch->reveal());
-
-        $event->getApplication()->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
-            $this->assertEquals(Application::ERROR_MIDDLEWARE_CANNOT_DISPATCH, $e->getError());
-            $this->assertInstanceOf(InvalidMiddlewareException::class, $e->getParam('exception'));
-            return 'FAILED';
+        $application->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, static function (MvcEvent $e) {
+            self::assertEquals(Application::ERROR_MIDDLEWARE_CANNOT_DISPATCH, $e->getError());
+            return $e->getParam('exception');
         });
 
-        $listener = new MiddlewareListener();
-
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
+        /** @var InvalidMiddlewareException $return */
         $return = $listener->onDispatch($event);
-        $this->assertEquals('FAILED', $return);
+        self::assertInstanceOf(InvalidMiddlewareException::class, $return);
+        self::assertStringContainsString(
+            'array given',
+            $return->getMessage(),
+            'Exception should provide details of invalid value'
+        );
     }
 
-    public function testValidMiddlewareDispatchCancelsPreviousDispatchFailures()
+    public function testRouteMatchIsInjectedToRequestAsAttribute(): void
     {
-        $middlewareName = uniqid('middleware', true);
-        $routeMatch     = new RouteMatch(['middleware' => $middlewareName]);
-        $response       = new DiactorosResponse();
-        /* @var Application|MockObject $application */
-        $application    = $this->createMock(Application::class);
-        $eventManager   = new EventManager();
-        $middleware     = $this->getMockBuilder(MiddlewareInterface::class)->setMethods(['process'])->getMock();
-        $serviceManager = new ServiceManager([
-            'factories' => [
-                'EventManager' => function () {
-                    return new EventManager();
-                },
-            ],
-            'services' => [
-                $middlewareName => $middleware,
-            ],
-        ]);
+        $routeMatch    = null;
+        $matchedParams = [
+            'controller' => PipeSpec::class,
+            'middleware' => new CallableMiddlewareDecorator(
+                static function (ServerRequestInterface $request) use (&$routeMatch) {
+                    $routeMatch = $request->getAttribute(RouteMatch::class);
+                    return new DiactorosResponse();
+                }
+            ),
+        ];
 
-        $application->expects(self::any())->method('getRequest')->willReturn(new Request());
-        $application->expects(self::any())->method('getEventManager')->willReturn($eventManager);
-        $application->expects(self::any())->method('getServiceManager')->willReturn($serviceManager);
-        $application->expects(self::any())->method('getResponse')->willReturn(new Response());
-        $middleware->expects(self::once())->method('process')->willReturn($response);
+        $event = $this->createMvcEvent($matchedParams, []);
 
-        $event = new MvcEvent();
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
+        $return   = $listener->onDispatch($event);
+        self::assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
+        self::assertInstanceOf(RouteMatch::class, $routeMatch);
+        self::assertEquals($matchedParams, $routeMatch->getParams());
+    }
 
-        $event->setRequest(new Request());
-        $event->setApplication($application);
+    public function testRouteMatchParametersAreNotInjectedAsAttributes(): void
+    {
+        $passedRequest = null;
+
+        $matchedParams = [
+            'controller' => PipeSpec::class,
+            'middleware' => new CallableMiddlewareDecorator(
+                static function (ServerRequestInterface $request) use (&$passedRequest) {
+                    $passedRequest = $request;
+                    return new DiactorosResponse();
+                }
+            ),
+            'test_param' => 'test_param_value',
+        ];
+
+        $event    = $this->createMvcEvent($matchedParams, []);
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
+        $return   = $listener->onDispatch($event);
+
+        self::assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
+        self::assertInstanceOf(ServerRequestInterface::class, $passedRequest);
+        $attributes = $passedRequest->getAttributes();
+        self::assertArrayNotHasKey('test_param', $attributes);
+        self::assertArrayNotHasKey('controller', $attributes);
+        self::assertArrayNotHasKey('middleware', $attributes);
+    }
+
+    public function testTriggersDispatchErrorForExceptionRaisedInMiddleware(): void
+    {
+        $exception     = new Exception();
+        $matchedParams = [
+            'controller' => PipeSpec::class,
+            'middleware' => new CallableMiddlewareDecorator(static function () use ($exception) {
+                throw $exception;
+            }),
+        ];
+        $event         = $this->createMvcEvent($matchedParams, []);
+
+        $application = $event->getApplication();
+        $application->getEventManager()
+            ->attach(MvcEvent::EVENT_DISPATCH_ERROR, static function (MvcEvent $e) {
+                self::assertEquals(Application::ERROR_EXCEPTION, $e->getError());
+                return $e->getParam('exception');
+            });
+
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
+        $return   = $listener->onDispatch($event);
+        self::assertSame($exception, $return, 'Thrown exception must be provided as MvcEvent exception parameter');
+    }
+
+    public function testExhaustedMiddlewarePipeTriggersDispatchError(): void
+    {
+        $exception     = new Exception();
+        $matchedParams = [
+            'controller' => PipeSpec::class,
+            'middleware' => new PipeSpec(),
+        ];
+        $event         = $this->createMvcEvent($matchedParams, []);
+
+        $application = $event->getApplication();
+        $application->getEventManager()
+            ->attach(MvcEvent::EVENT_DISPATCH_ERROR, static function (MvcEvent $e) {
+                self::assertEquals(Application::ERROR_EXCEPTION, $e->getError());
+                return 'Dispatch error triggered';
+            });
+
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
+        $return   = $listener->onDispatch($event);
+        self::assertSame('Dispatch error triggered', $return);
+        self::assertInstanceOf(EmptyPipelineException::class, $event->getParam('exception'));
+    }
+
+    /**
+     * @dataProvider validMiddlewareProvider
+     * @psalm-param array<string, mixed> $matchedParams
+     * @psalm-param array<string, mixed> $services
+     */
+    public function testValidMiddlewareDispatchCancelsPreviousDispatchFailures(
+        array $matchedParams,
+        array $services
+    ): void {
+        $event = $this->createMvcEvent($matchedParams, $services);
         $event->setError(Application::ERROR_CONTROLLER_CANNOT_DISPATCH);
-        $event->setRouteMatch($routeMatch);
 
-        $listener = new MiddlewareListener();
-        $result   = $listener->onDispatch($event);
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
+        $return   = $listener->onDispatch($event);
 
-        self::assertInstanceOf(Response::class, $result);
-        self::assertInstanceOf(Response::class, $event->getResult());
+        self::assertInstanceOf(Response::class, $return, 'Middleware dispatch failed');
+        self::assertSame(200, $return->getStatusCode());
         self::assertEmpty($event->getError(), 'Previously set MVC errors are canceled by a successful dispatch');
-    }
-
-    public function testValidMiddlewareFiresDispatchableInterfaceEventListeners()
-    {
-        $middlewareName = uniqid('middleware', true);
-        $routeMatch     = new RouteMatch(['middleware' => $middlewareName]);
-        $response       = new DiactorosResponse();
-        /* @var Application|MockObject $application */
-        $application    = $this->createMock(Application::class);
-        $sharedManager  = new SharedEventManager();
-        /* @var callable|MockObject $sharedListener */
-        $sharedListener = $this->getMockBuilder(stdClass::class)->setMethods(['__invoke'])->getMock();
-        $eventManager   = new EventManager();
-        $middleware     = $this->getMockBuilder(MiddlewareInterface::class)->setMethods(['process'])->getMock();
-        $serviceManager = new ServiceManager([
-            'factories' => [
-                'EventManager' => function () use ($sharedManager) {
-                    return new EventManager($sharedManager);
-                },
-            ],
-            'services' => [
-                $middlewareName => $middleware,
-            ],
-        ]);
-
-        $application->expects(self::any())->method('getRequest')->willReturn(new Request());
-        $application->expects(self::any())->method('getEventManager')->willReturn($eventManager);
-        $application->expects(self::any())->method('getServiceManager')->willReturn($serviceManager);
-        $application->expects(self::any())->method('getResponse')->willReturn(new Response());
-        $middleware->expects(self::once())->method('process')->willReturn($response);
-
-        $event = new MvcEvent();
-
-        $event->setRequest(new Request());
-        $event->setApplication($application);
-        $event->setError(Application::ERROR_CONTROLLER_CANNOT_DISPATCH);
-        $event->setRouteMatch($routeMatch);
-
-        $listener = new MiddlewareListener();
-
-        $sharedManager->attach(DispatchableInterface::class, MvcEvent::EVENT_DISPATCH, $sharedListener);
-        $sharedListener->expects(self::once())->method('__invoke')->with($event);
-
-        $listener->onDispatch($event);
     }
 
     /**
      * @dataProvider alreadySetMvcEventResultProvider
-     *
      * @param mixed $alreadySetResult
      */
-    public function testWillNotDispatchWhenAnMvcEventResultIsAlreadySet($alreadySetResult)
+    public function testWillNotDispatchWhenAnMvcEventResultIsAlreadySet($alreadySetResult): void
     {
-        $middlewareName = uniqid('middleware', true);
-        $routeMatch     = new RouteMatch(['middleware' => $middlewareName]);
-        /* @var Application|MockObject $application */
-        $application    = $this->createMock(Application::class);
-        $eventManager   = new EventManager();
-        $middleware     = $this->getMockBuilder(stdClass::class)->setMethods(['__invoke'])->getMock();
-        $serviceManager = new ServiceManager([
-            'factories' => [
-                'EventManager' => function () {
-                    return new EventManager();
-                },
-            ],
-            'services' => [
-                $middlewareName => $middleware,
-            ],
-        ]);
+        $middleware = $this->createMock(MiddlewareInterface::class);
+        $middleware->expects(self::never())
+            ->method('process');
+        $matchedParams = [
+            'controller' => PipeSpec::class,
+            'middleware' => $middleware,
+        ];
+        $event         = $this->createMvcEvent($matchedParams, []);
+        $event->setResult($alreadySetResult);
 
-        $application->expects(self::any())->method('getRequest')->willReturn(new Request());
-        $application->expects(self::any())->method('getEventManager')->willReturn($eventManager);
-        $application->expects(self::any())->method('getServiceManager')->willReturn($serviceManager);
-        $application->expects(self::any())->method('getResponse')->willReturn(new Response());
-        $middleware->expects(self::never())->method('__invoke');
+        $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
+        $return   = $listener->onDispatch($event);
 
-        $event = new MvcEvent();
-
-        $event->setResult($alreadySetResult); // a result is already there - listener should bail out early
-        $event->setRequest(new Request());
-        $event->setApplication($application);
-        $event->setError(Application::ERROR_CONTROLLER_CANNOT_DISPATCH);
-        $event->setRouteMatch($routeMatch);
-
-        $listener = new MiddlewareListener();
-
-        $eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, function () {
-            self::fail('No dispatch failures should be raised - dispatch should be skipped');
-        });
-
-        $listener->onDispatch($event);
-
-        self::assertSame($alreadySetResult, $event->getResult(), 'The event result was not replaced');
+        self::assertNull($return, 'Middleware must not be dispatched');
+        self::assertEquals($alreadySetResult, $event->getResult());
     }
 
     /**
      * @return mixed[][]
      */
-    public function alreadySetMvcEventResultProvider()
+    public function alreadySetMvcEventResultProvider(): array
     {
         return [
             [123],

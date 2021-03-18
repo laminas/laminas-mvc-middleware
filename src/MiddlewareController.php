@@ -10,14 +10,18 @@ declare(strict_types=1);
 
 namespace Laminas\Mvc\Middleware;
 
+use Laminas\EventManager\EventInterface;
 use Laminas\EventManager\EventManagerInterface;
 use Laminas\Http\Request;
 use Laminas\Mvc\Controller\AbstractController;
 use Laminas\Mvc\Controller\MiddlewareController as DeprecatedMiddlewareController;
+use Laminas\Mvc\Controller\PluginManager;
 use Laminas\Mvc\Exception\RuntimeException;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Psr7Bridge\Psr7ServerRequest;
 use Laminas\Router\RouteMatch;
+use Laminas\Stdlib\RequestInterface;
+use Laminas\Stdlib\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -26,6 +30,12 @@ use function sprintf;
 
 /**
  * @internal
+ *
+ * @property PluginManager         $plugins
+ * @property RequestInterface      $request
+ * @property ResponseInterface     $response
+ * @property EventManagerInterface $event
+ * @property EventInterface        $events
  */
 final class MiddlewareController extends AbstractController
 {

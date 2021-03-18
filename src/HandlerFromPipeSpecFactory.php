@@ -25,6 +25,7 @@ class HandlerFromPipeSpecFactory
 {
     /**
      * @param string|MiddlewareInterface|RequestHandlerInterface|Closure|PipeSpec $middleware
+     * @psalm-param mixed                                                         $middleware
      */
     public function createFromMiddlewareParam(ContainerInterface $container, $middleware): RequestHandlerInterface
     {
@@ -60,6 +61,7 @@ class HandlerFromPipeSpecFactory
     ): RequestHandlerInterface {
         // Pipe has implicit empty pipeline handler
         $pipe = new MiddlewarePipe();
+        /** @var mixed $middlewareToBePiped */
         foreach ($middlewarePipeSpec->getSpec() as $middlewareToBePiped) {
             $pipe->pipe($this->resolveMiddlewareFromSpec($container, $middlewareToBePiped));
         }
@@ -68,6 +70,7 @@ class HandlerFromPipeSpecFactory
 
     /**
      * @param string|MiddlewareInterface|RequestHandlerInterface|Closure $middleware
+     * @psalm-param mixed                                                $middleware
      */
     private function resolveMiddlewareFromSpec(ContainerInterface $container, $middleware): MiddlewareInterface
     {

@@ -76,6 +76,9 @@ class MiddlewareListenerTest extends TestCase
         return $event;
     }
 
+    /**
+     * @return iterable<string, array{0: array<string, mixed>, 1: array<string, mixed>, 2: string}>
+     */
     public function validMiddlewareProvider(): iterable
     {
         // Remember that mutable body writes are bad!
@@ -289,10 +292,14 @@ class MiddlewareListenerTest extends TestCase
         $event         = $this->createMvcEvent($matchedParams, []);
         $application   = $event->getApplication();
 
-        $application->getEventManager()->attach(MvcEvent::EVENT_DISPATCH_ERROR, static function (MvcEvent $e) {
-            self::assertEquals(Application::ERROR_MIDDLEWARE_CANNOT_DISPATCH, $e->getError());
-            return $e->getParam('exception');
-        });
+        $application->getEventManager()->attach(
+            MvcEvent::EVENT_DISPATCH_ERROR,
+            /** @return mixed */
+            static function (MvcEvent $e) {
+                self::assertEquals(Application::ERROR_MIDDLEWARE_CANNOT_DISPATCH, $e->getError());
+                return $e->getParam('exception');
+            }
+        );
 
         $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         /** @var InvalidMiddlewareException $return */
@@ -312,6 +319,7 @@ class MiddlewareListenerTest extends TestCase
             'controller' => PipeSpec::class,
             'middleware' => new CallableMiddlewareDecorator(
                 static function (ServerRequestInterface $request) use (&$routeMatch) {
+                    /** @var RouteMatch $routeMatch */
                     $routeMatch = $request->getAttribute(RouteMatch::class);
                     return new DiactorosResponse();
                 }
@@ -367,10 +375,14 @@ class MiddlewareListenerTest extends TestCase
 
         $application = $event->getApplication();
         $application->getEventManager()
-            ->attach(MvcEvent::EVENT_DISPATCH_ERROR, static function (MvcEvent $e) {
-                self::assertEquals(Application::ERROR_EXCEPTION, $e->getError());
-                return $e->getParam('exception');
-            });
+            ->attach(
+                MvcEvent::EVENT_DISPATCH_ERROR,
+                /** @return mixed */
+                static function (MvcEvent $e) {
+                    self::assertEquals(Application::ERROR_EXCEPTION, $e->getError());
+                    return $e->getParam('exception');
+                }
+            );
 
         $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
@@ -379,7 +391,6 @@ class MiddlewareListenerTest extends TestCase
 
     public function testExhaustedMiddlewarePipeTriggersDispatchError(): void
     {
-        $exception     = new Exception();
         $matchedParams = [
             'controller' => PipeSpec::class,
             'middleware' => new PipeSpec(),

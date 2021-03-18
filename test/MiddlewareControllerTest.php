@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace LaminasTest\Mvc\Middleware;
 
+use Closure;
 use Laminas\EventManager\EventManager;
 use Laminas\EventManager\EventManagerInterface;
 use Laminas\Http\Request;
@@ -77,7 +78,7 @@ class MiddlewareControllerTest extends TestCase
     {
         $request = new Request();
         $result  = $this->createMock(ResponseInterface::class);
-        /** @var callable&MockObject $dispatchListener */
+        /** @var Closure&MockObject $dispatchListener */
         $dispatchListener = $this->getMockBuilder(stdClass::class)
             ->addMethods(['__invoke'])
             ->getMock();
@@ -114,7 +115,7 @@ class MiddlewareControllerTest extends TestCase
     {
         /** @var RequestInterface $request */
         $request = $this->createMock(RequestInterface::class);
-        /** @var callable|MockObject $dispatchListener */
+        /** @var Closure&MockObject $dispatchListener */
         $dispatchListener = $this->getMockBuilder(stdClass::class)
             ->addMethods(['__invoke'])
             ->getMock();

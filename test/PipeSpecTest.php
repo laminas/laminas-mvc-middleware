@@ -45,21 +45,22 @@ class PipeSpecTest extends TestCase
 
     public function testCanBeExportedAndReimported(): void
     {
-        $middleware   = static function (
-            ServerRequestInterface $request,
-            RequestHandlerInterface $handler
-        ): ResponseInterface {
+        $middleware = static function (): ResponseInterface {
             return new Response();
         };
-        $spec         = new PipeSpec('container_key_string', $middleware, 'another_key');
-        $export       = VarExporter::export(
+        $spec       = new PipeSpec('container_key_string', $middleware, 'another_key');
+        $export     = VarExporter::export(
             $spec,
             VarExporter::ADD_RETURN | VarExporter::CLOSURE_SNAPSHOT_USES
         );
-        $restoredSpec = eval($export);
+        /** @var PipeSpec $restoredPipeSpec */
+        $restoredPipeSpec = eval($export);
+        self::assertInstanceOf(PipeSpec::class, $restoredPipeSpec);
+        /** @var list<mixed> $restoredSpec */
+        $restoredSpec = $restoredPipeSpec->getSpec();
         self::assertEquals(
             ['container_key_string', $middleware, 'another_key'],
-            array_values($restoredSpec->getSpec())
+            array_values($restoredSpec)
         );
     }
 

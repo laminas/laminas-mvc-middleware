@@ -29,6 +29,7 @@ class ModuleTest extends TestCase
     public function testGetConfigReturnsArray(): array
     {
         $config = $this->module->getConfig();
+        /** @psalm-suppress RedundantCondition */
         self::assertIsArray($config);
         return $config;
     }

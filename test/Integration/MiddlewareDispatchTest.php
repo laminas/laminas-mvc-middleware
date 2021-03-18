@@ -10,7 +10,9 @@ declare(strict_types=1);
 
 namespace LaminasTest\Mvc\Middleware\Integration;
 
+use Closure;
 use Laminas\Diactoros\Response;
+use Laminas\Http\Request;
 use Laminas\Mvc\Controller\MiddlewareController as DeprecatedMiddlewareController;
 use Laminas\Mvc\Middleware\MiddlewareController;
 use Laminas\Mvc\Middleware\PipeSpec;
@@ -23,6 +25,8 @@ use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Server\MiddlewareInterface;
 use stdClass;
+
+use function assert;
 
 /**
  * @group integration
@@ -63,8 +67,9 @@ class MiddlewareDispatchTest extends TestCase
     public function testDispatchesMiddleware(): void
     {
         $services = $this->application->getServiceManager();
-
-        $services->get('Request')->setUri('http://example.local/middleware');
+        /** @var Request $request */
+        $request = $services->get('Request');
+        $request->setUri('http://example.local/middleware');
 
         $middlewareMock = $this->prophesize(MiddlewareInterface::class);
         $middlewareMock->process(Argument::cetera())
@@ -78,11 +83,14 @@ class MiddlewareDispatchTest extends TestCase
     public function testMiddlewareDispatchTriggersSharedEventOnMiddlewareController(): void
     {
         $sharedEm = $this->application->getEventManager()->getSharedManager();
+        assert($sharedEm !== null);
         $services = $this->application->getServiceManager();
-        $services->get('Request')->setUri('http://example.local/middleware');
+        /** @var Request $request */
+        $request = $services->get('Request');
+        $request->setUri('http://example.local/middleware');
         $services->setService('MiddlewareMock', new Middleware());
 
-        /** @var callable&MockObject $listener */
+        /** @var Closure&MockObject $listener */
         $listener = $this->getMockBuilder(stdClass::class)
             ->addMethods(['__invoke'])
             ->getMock();
@@ -95,11 +103,14 @@ class MiddlewareDispatchTest extends TestCase
     public function testMiddlewareDispatchTriggersSharedEventOnOldMiddlewareController(): void
     {
         $sharedEm = $this->application->getEventManager()->getSharedManager();
+        assert($sharedEm !== null);
         $services = $this->application->getServiceManager();
-        $services->get('Request')->setUri('http://example.local/middleware');
+        /** @var Request $request */
+        $request = $services->get('Request');
+        $request->setUri('http://example.local/middleware');
         $services->setService('MiddlewareMock', new Middleware());
 
-        /** @var callable&MockObject $listener */
+        /** @var Closure&MockObject $listener */
         $listener = $this->getMockBuilder(stdClass::class)
             ->addMethods(['__invoke'])
             ->getMock();

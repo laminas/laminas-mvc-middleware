@@ -52,6 +52,7 @@ class MiddlewareListener extends AbstractListenerAggregate
             return null;
         }
 
+        /** @var mixed $middleware */
         $middleware = $routeMatch->getParam('middleware', null);
 
         $request = $event->getRequest();
@@ -75,9 +76,12 @@ class MiddlewareListener extends AbstractListenerAggregate
         }
 
         try {
+            /** @var EventManagerInterface $eventManager */
+            $eventManager = $application->getServiceManager()->get('EventManager');
+            /** @var mixed $return */
             $return = (new MiddlewareController(
                 $pipe,
-                $application->getServiceManager()->get('EventManager'),
+                $eventManager,
                 $event
             ))->dispatch($request, $response);
         } catch (Throwable $exception) {
@@ -87,8 +91,10 @@ class MiddlewareListener extends AbstractListenerAggregate
 
             $events  = $application->getEventManager();
             $results = $events->triggerEvent($event);
-            $return  = $results->last();
+            /** @var mixed $return */
+            $return = $results->last();
             if (! $return) {
+                /** @var mixed $return */
                 $return = $event->getResult();
             }
         }
@@ -126,8 +132,10 @@ class MiddlewareListener extends AbstractListenerAggregate
 
         $events  = $application->getEventManager();
         $results = $events->triggerEvent($event);
-        $return  = $results->last();
+        /** @var mixed $return */
+        $return = $results->last();
         if (! $return) {
+            /** @var mixed $return */
             $return = $event->getResult();
         }
         return $return;

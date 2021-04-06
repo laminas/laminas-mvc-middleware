@@ -1,7 +1,6 @@
 # laminas-mvc-middleware
 
-[![Build Status](https://travis-ci.com/laminas/laminas-mvc-middleware.svg?branch=master)](https://travis-ci.com/laminas/laminas-mvc-middleware)
-[![Coverage Status](https://coveralls.io/repos/github/laminas/laminas-mvc-middleware/badge.svg?branch=master)](https://coveralls.io/github/laminas/laminas-mvc-middleware?branch=master)
+[![Build Status](https://github.com/laminas/laminas-mvc-middleware/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/laminas/laminas-mvc-middleware/actions/workflows/continuous-integration.yml)
 
 This library provides the ability to dispatch middleware pipelines in place of
 controllers within laminas-mvc.

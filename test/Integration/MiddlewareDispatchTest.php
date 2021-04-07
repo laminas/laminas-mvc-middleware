@@ -19,12 +19,10 @@ use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Router\Http\Literal;
 use LaminasTest\Mvc\Middleware\TestAsset\Middleware;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Server\MiddlewareInterface;
-use stdClass;
 
 use function assert;
 
@@ -90,14 +88,12 @@ class MiddlewareDispatchTest extends TestCase
         $request->setUri('http://example.local/middleware');
         $services->setService('MiddlewareMock', new Middleware());
 
-        /** @var Closure&MockObject $listener */
-        $listener = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['__invoke'])
-            ->getMock();
-        $listener->expects(self::atLeastOnce())->method('__invoke');
+        $called   = false;
+        $listener = $this->listenerSpy($called);
         $sharedEm->attach(MiddlewareController::class, MvcEvent::EVENT_DISPATCH, $listener);
-
         $this->application->run();
+
+        self::assertTrue($called);
     }
 
     public function testMiddlewareDispatchTriggersSharedEventOnOldMiddlewareController(): void
@@ -110,13 +106,18 @@ class MiddlewareDispatchTest extends TestCase
         $request->setUri('http://example.local/middleware');
         $services->setService('MiddlewareMock', new Middleware());
 
-        /** @var Closure&MockObject $listener */
-        $listener = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['__invoke'])
-            ->getMock();
-        $listener->expects(self::atLeastOnce())->method('__invoke');
+        $called   = false;
+        $listener = $this->listenerSpy($called);
         $sharedEm->attach(DeprecatedMiddlewareController::class, MvcEvent::EVENT_DISPATCH, $listener);
-
         $this->application->run();
+
+        self::assertTrue($called);
+    }
+
+    private function listenerSpy(bool &$called): Closure
+    {
+        return static function () use (&$called) {
+            $called = true;
+        };
     }
 }

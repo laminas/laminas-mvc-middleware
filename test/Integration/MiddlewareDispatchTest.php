@@ -12,6 +12,7 @@ namespace LaminasTest\Mvc\Middleware\Integration;
 
 use Closure;
 use Laminas\Diactoros\Response;
+use Laminas\EventManager\SharedEventManagerInterface;
 use Laminas\Http\Request;
 use Laminas\Mvc\Controller\MiddlewareController as DeprecatedMiddlewareController;
 use Laminas\Mvc\Middleware\MiddlewareController;
@@ -23,8 +24,6 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Server\MiddlewareInterface;
-
-use function assert;
 
 /**
  * @group integration
@@ -80,8 +79,8 @@ class MiddlewareDispatchTest extends TestCase
 
     public function testMiddlewareDispatchTriggersSharedEventOnMiddlewareController(): void
     {
+        /** @var SharedEventManagerInterface $sharedEm */
         $sharedEm = $this->application->getEventManager()->getSharedManager();
-        assert($sharedEm !== null);
         $services = $this->application->getServiceManager();
         /** @var Request $request */
         $request = $services->get('Request');
@@ -98,8 +97,8 @@ class MiddlewareDispatchTest extends TestCase
 
     public function testMiddlewareDispatchTriggersSharedEventOnOldMiddlewareController(): void
     {
+        /** @var SharedEventManagerInterface $sharedEm */
         $sharedEm = $this->application->getEventManager()->getSharedManager();
-        assert($sharedEm !== null);
         $services = $this->application->getServiceManager();
         /** @var Request $request */
         $request = $services->get('Request');

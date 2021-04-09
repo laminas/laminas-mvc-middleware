@@ -13,10 +13,8 @@ namespace LaminasTest\Mvc\Middleware\Integration;
 use Laminas\Mvc\Application;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Mvc\SendResponseListener;
-use LaminasTest\Mvc\Middleware\Integration\TestAsset\NoopSendResponseListener as Noop;
+use LaminasTest\Mvc\Middleware\Integration\TestAsset\NoopSendResponseListener;
 use Throwable;
-
-use function array_merge;
 
 trait ApplicationTrait
 {
@@ -35,9 +33,8 @@ trait ApplicationTrait
      */
     protected function setUpApplication(array $extraConfig = []): Application
     {
-        $listenerConfig = ['service_manager' => ['services' => [SendResponseListener::class => new Noop()]]];
-        $extraConfig    = array_merge($extraConfig, $listenerConfig);
-
+        /** @psalm-suppress MixedArrayAssignment */
+        $extraConfig['service_manager']['services'][SendResponseListener::class] = new NoopSendResponseListener();
         $config            = [
             'modules'                 => [
                 'Laminas\Router',

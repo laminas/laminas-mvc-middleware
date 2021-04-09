@@ -36,6 +36,11 @@
                 <file name="test/PipeSpecTest.php" />
             </errorLevel>
         </InternalMethod>
+        <PropertyNotSetInConstructor>
+            <errorLevel type="suppress">
+                <file name="src/MiddlewareController.php" />
+            </errorLevel>
+        </PropertyNotSetInConstructor>
 
     </issueHandlers>
     <plugins>

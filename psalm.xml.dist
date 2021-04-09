@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<psalm
+    totallyTyped="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+>
+    <projectFiles>
+        <directory name="src" />
+        <directory name="test" />
+        <ignoreFiles>
+            <directory name="vendor" />
+        </ignoreFiles>
+    </projectFiles>
+
+    <issueHandlers>
+        <DeprecatedClass>
+            <errorLevel type="info">
+                <file name="src/Module.php" />
+                <file name="test/Integration/ApplicationBootstrapTest.php" />
+            </errorLevel>
+        </DeprecatedClass>
+        <DuplicateArrayKey>
+            <errorLevel type="info">
+                <file name="src/Module.php" />
+            </errorLevel>
+        </DuplicateArrayKey>
+        <InternalClass>
+            <errorLevel type="suppress">
+                <file name="test/MiddlewareControllerTest.php" />
+                <file name="test/MiddlewareListenerTest.php" />
+            </errorLevel>
+        </InternalClass>
+        <InternalMethod>
+            <errorLevel type="suppress">
+                <file name="test/PipeSpecTest.php" />
+            </errorLevel>
+        </InternalMethod>
+        <PropertyNotSetInConstructor>
+            <errorLevel type="suppress">
+                <file name="src/MiddlewareController.php" />
+            </errorLevel>
+        </PropertyNotSetInConstructor>
+
+    </issueHandlers>
+    <plugins>
+        <pluginClass class="Psalm\PhpUnitPlugin\Plugin" />
+    </plugins>
+</psalm>

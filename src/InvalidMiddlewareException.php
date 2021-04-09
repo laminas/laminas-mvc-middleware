@@ -20,13 +20,17 @@ use function gettype;
 use function is_object;
 use function sprintf;
 
+/**
+ * @psalm-suppress DeprecatedClass
+ */
 final class InvalidMiddlewareException extends DeprecatedMiddlewareException
 {
     /** @var string */
     private $middlewareName = '';
 
     /**
-     * @param string $middlewareName
+     * @param string      $middlewareName
+     * @psalm-param mixed $middlewareName
      */
     public static function fromMiddlewareName($middlewareName): self
     {
@@ -51,7 +55,7 @@ final class InvalidMiddlewareException extends DeprecatedMiddlewareException
             $actual
         ));
 
-        $instance->middlewareName = $name;
+        $instance->middlewareName = (string) $name;
         return $instance;
     }
 
@@ -65,6 +69,6 @@ final class InvalidMiddlewareException extends DeprecatedMiddlewareException
 
     public function toMiddlewareName(): string
     {
-        return $this->middlewareName ?? '';
+        return $this->middlewareName;
     }
 }

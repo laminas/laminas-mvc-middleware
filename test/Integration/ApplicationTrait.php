@@ -14,6 +14,7 @@ use Laminas\Mvc\Application;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Mvc\SendResponseListener;
 use LaminasTest\Mvc\Middleware\Integration\TestAsset\NoopSendResponseListener;
+use Throwable;
 
 trait ApplicationTrait
 {
@@ -27,8 +28,12 @@ trait ApplicationTrait
      */
     protected $failOnErrorEvents = true;
 
+    /**
+     * @param array<string, mixed> $extraConfig
+     */
     protected function setUpApplication(array $extraConfig = []): Application
     {
+        /** @psalm-suppress MixedArrayAssignment */
         $extraConfig['service_manager']['services'][SendResponseListener::class] = new NoopSendResponseListener();
         $config            = [
             'modules'                 => [
@@ -43,10 +48,11 @@ trait ApplicationTrait
         $this->application = Application::init($config);
 
         //setup verbose error listeners
-        $errorListener = function (MvcEvent $event) {
+        $errorListener = function (MvcEvent $event): void {
             if (! $this->failOnErrorEvents) {
                 return;
             }
+            /** @var Throwable|null $exception */
             $exception = $event->getParam('exception');
             $exception = $exception ?: $event->getError();
             $this->fail((string) $exception);
@@ -62,6 +68,7 @@ trait ApplicationTrait
 
     protected function tearDownApplication(): void
     {
+        /** @psalm-suppress PossiblyNullPropertyAssignmentValue */
         $this->application       = null;
         $this->failOnErrorEvents = true;
     }

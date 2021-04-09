@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace LaminasTest\Mvc\Middleware;
 
+use Closure;
 use Laminas\EventManager\EventManager;
 use Laminas\EventManager\EventManagerInterface;
 use Laminas\Http\Request;
@@ -26,7 +27,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use stdClass;
 
 /**
  * @covers \Laminas\Mvc\Middleware\MiddlewareController
@@ -75,35 +75,18 @@ class MiddlewareControllerTest extends TestCase
 
     public function testWillDispatchARequestAndSetResponseFromAGivenRequestHandler(): void
     {
-        $request = new Request();
-        $result  = $this->createMock(ResponseInterface::class);
-        /** @var callable&MockObject $dispatchListener */
-        $dispatchListener = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['__invoke'])
-            ->getMock();
-
+        $request          = new Request();
+        $result           = $this->createMock(ResponseInterface::class);
+        $dispatchListener = $this->listenerSpy($request);
         $this->eventManager->attach(MvcEvent::EVENT_DISPATCH, $dispatchListener, 100);
         $this->eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, function () {
             self::fail('No dispatch error expected');
         }, 100);
 
-        $dispatchListener
-            ->expects(self::once())
-            ->method('__invoke')
-            ->with(self::callback(function (MvcEvent $event) use ($request) {
-                self::assertSame($this->event, $event);
-                self::assertSame(MvcEvent::EVENT_DISPATCH, $event->getName());
-                self::assertSame($this->controller, $event->getTarget());
-                self::assertSame($request, $event->getRequest());
-
-                return true;
-            }));
-
         $this->requestHandler
             ->expects(self::once())
             ->method('handle')
             ->willReturn($result);
-
         $controllerResult = $this->controller->dispatch($request);
 
         self::assertSame($result, $controllerResult);
@@ -112,32 +95,15 @@ class MiddlewareControllerTest extends TestCase
 
     public function testWillRefuseDispatchingInvalidRequestTypes(): void
     {
-        /** @var RequestInterface $request */
-        $request = $this->createMock(RequestInterface::class);
-        /** @var callable|MockObject $dispatchListener */
-        $dispatchListener = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['__invoke'])
-            ->getMock();
-
+        /** @var RequestInterface $invalidRequest */
+        $invalidRequest   = $this->createMock(RequestInterface::class);
+        $dispatchListener = $this->listenerSpy($invalidRequest);
         $this->eventManager->attach(MvcEvent::EVENT_DISPATCH, $dispatchListener, 100);
 
-        $dispatchListener
-            ->expects(self::once())
-            ->method('__invoke')
-            ->with(self::callback(function (MvcEvent $event) use ($request) {
-                self::assertSame($this->event, $event);
-                self::assertSame(MvcEvent::EVENT_DISPATCH, $event->getName());
-                self::assertSame($this->controller, $event->getTarget());
-                self::assertSame($request, $event->getRequest());
-
-                return true;
-            }));
-
         $this->requestHandler->expects(self::never())->method('handle');
-
         $this->expectException(RuntimeException::class);
 
-        $this->controller->dispatch($request);
+        $this->controller->dispatch($invalidRequest);
     }
 
     public function testWillSetRouteMatchAsARequestAttribute(): void
@@ -180,5 +146,19 @@ class MiddlewareControllerTest extends TestCase
             ->willReturn($this->createMock(ResponseInterface::class));
 
         $this->controller->dispatch($request);
+    }
+
+    private function listenerSpy(RequestInterface $request): Closure
+    {
+        $callCount = 0;
+        return function (MvcEvent $event) use ($request, &$callCount): bool {
+            $callCount = (int) $callCount + 1;
+            self::assertSame($this->event, $event);
+            self::assertSame(MvcEvent::EVENT_DISPATCH, $event->getName());
+            self::assertSame($this->controller, $event->getTarget());
+            self::assertSame($request, $event->getRequest());
+            self::assertSame(1, $callCount);
+            return true;
+        };
     }
 }

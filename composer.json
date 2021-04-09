@@ -44,7 +44,9 @@
         "laminas/laminas-diactoros": "^2.4",
         "laminas/laminas-router": "^3.3",
         "phpspec/prophecy-phpunit": "^2.0",
-        "phpunit/phpunit": "^9.4"
+        "phpunit/phpunit": "^9.4",
+        "psalm/plugin-phpunit": "^0.15.1",
+        "vimeo/psalm": "^4.6"
     },
     "autoload": {
         "psr-4": {
@@ -63,6 +65,7 @@
         ],
         "cs-check": "phpcs",
         "cs-fix": "phpcbf",
+        "static-analysis": "psalm --shepherd --stats",
         "test": "phpunit --colors=always",
         "test-coverage": "phpunit --colors=always --coverage-clover clover.xml"
     }

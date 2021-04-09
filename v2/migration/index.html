@@ -6,9 +6,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Dispatch middleware pipelines in place of controllers in laminas-mvc.">  
+    <link rel="canonical" href="https://docs.laminas.dev/laminas-mvc-middleware/v2/migration/">
     <link rel="shortcut icon" href="https://docs.laminas.dev/img/trademark-laminas-foundation-rgb.svg">
 
-    <title>laminas-mvc-middleware - Laminas Docs</title>
+    <title>Migration from Version 1 - laminas-mvc-middleware - Laminas Docs</title>
 
     <link rel="stylesheet" href="https://docs.laminas.dev/css/styles.css">
     
@@ -114,7 +115,7 @@
                     
     <div class="subnavigation hidden-print">
         <h4 class="subnavigation__title">
-            <a href="../.">laminas-mvc-middleware</a>
+            <a href="../..">laminas-mvc-middleware</a>
         </h4>
 
         <h5 class="subnavigation__subtitle">Table of Contents</h5>
@@ -124,8 +125,45 @@
 
                 
                 
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../intro/" class="subnavigation__link">Introduction</a>
+    </li>
 
                     
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../installation/" class="subnavigation__link">Installation</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../quick-start/" class="subnavigation__link">Quick Start</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../dispatching-middleware/" class="subnavigation__link">Dispatching Middleware</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item">
+        <span class="subnavigation__headline">Migration</span>
+        <ul class="subnavigation__list">
+            
+                
+    <li class="subnavigation__list-item subnavigation__list-item--active">
+        <a href="./" class="subnavigation__link">Migration from Version 1</a>
+    </li>
+
+            
+        </ul>
+    </li>
+
                     
                 
             
@@ -188,7 +226,7 @@
         <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-left" aria-labelledby="version-selector-dropdown">
             
                 
-                    <a href="../v2/intro/" class="dropdown-item">
+                    <a href="../intro/" class="dropdown-item active">
                         
                             v2 (latest)
                         
@@ -196,7 +234,7 @@
                 
             
                 
-                    <a href="../v1/intro/" class="dropdown-item">
+                    <a href="../../v1/intro/" class="dropdown-item">
                         
                             v1
                         
@@ -227,21 +265,192 @@
                 
                 
                     
+    
+
+    
+    
+        <div class="toc">
+            <h6 class="toc__headline">On this page</h6>
+            <ul class="toc__list">
+                
+                    <li class="toc__entry">
+                        <a href="#controller-route-array-key" class="toc__link nav-link">'controller' Route Array Key</a>
+                    </li>
+                
+                    <li class="toc__entry">
+                        <a href="#pipespec-instance-in-middleware-definition" class="toc__link nav-link">PipeSpec Instance in middleware Definition</a>
+                    </li>
+                
+                    <li class="toc__entry">
+                        <a href="#psr-15-middleware" class="toc__link nav-link">PSR-15 Middleware</a>
+                    </li>
+                
+                    <li class="toc__entry">
+                        <a href="#removed-route-match-params-from-request" class="toc__link nav-link">Removed Route Match Params from Request</a>
+                    </li>
+                
+            </ul>
+        </div>
+    
+
                 
 
                 
+                    <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        
+            <li class="breadcrumb-item"><a href="https://docs.laminas.dev/">Overview</a></li>
+            <li class="breadcrumb-item"><a href="https://docs.laminas.dev/mvc/">MVC</a></li>
 
-<h1 class="content__title">404</h1>
-<blockquote>
-    <h3>Something went wrong!</h3>
-    <p>
-        We're sorry, but the page you are looking for does not exist.
-    </p>
-</blockquote>
+            
+                <li class="breadcrumb-item"><a href="../..">laminas-mvc-middleware</a></li>
 
-<a href="../." class="btn btn-default" role="button">Go to homepage</a>
+                
+                    
+                        
+                        
+                    
+                
+                    
+                        
+                        
+                            <li class="breadcrumb-item">Migration</li>
+                        
+                    
+                
+
+                <li class="breadcrumb-item active" aria-current="page">Migration from Version 1</li>
+            
+        
+    </ol>
+</nav>
 
 
+
+
+
+
+    
+    
+        <h2 class="chapter__headline">Migration</h2>
+    
+
+    <h1 id="migration-from-version-1">Migration from Version 1</h1>
+<p>This document details changes made from version 1 of this package or from its implementation in
+<a href="https://docs.laminas.dev/laminas-mvc/">laminas-mvc</a>.
+If installed, it overrides the default behavior in laminas-mvc.</p>
+<h2 id="controller-route-array-key"><code>'controller'</code> Route Array Key</h2>
+<p>In addition to providing a <code>'middleware'</code> array key in the route defaults definition, the value of the <code>'controller'</code>
+array key has to be explicitly set to <code>Laminas\Mvc\Middleware\PipeSpec::class</code>:</p>
+<pre class="highlight"><code class="language-php">/* ... */
+'some-route' =&gt; [
+    'type' =&gt; Literal::class,
+    'options' =&gt; [
+        'route' =&gt; '/some-route',
+        'defaults' =&gt; [
+            'controller' =&gt; \Laminas\Mvc\Middleware\PipeSpec::class,
+            'middleware' =&gt; SomeRequestHandler::class,
+        ],
+    ],
+],</code></pre>
+<h2 id="pipespec-instance-in-middleware-definition"><code>PipeSpec</code> Instance in <code>middleware</code> Definition</h2>
+<p>If you used to pass an array of middleware to the <code>middleware</code> array key to create a middleware pipe, it has to be
+rewritten to an instance of the <code>PipeSpec</code> object.</p>
+<p>Before:</p>
+<pre class="highlight"><code class="language-php">/* ... */
+'some-route' =&gt; [
+    'type' =&gt; Literal::class,
+    'options' =&gt; [
+        'route' =&gt; '/some-route',
+        'defaults' =&gt; [
+            'middleware' =&gt; [
+                SomeMiddleware::class,
+                SomeRequestHandler::class,
+            ],
+        ],
+    ],
+],</code></pre>
+<p>After:</p>
+<pre class="highlight"><code class="language-php">/* ... */
+'some-route' =&gt; [
+    'type' =&gt; Literal::class,
+    'options' =&gt; [
+        'route' =&gt; '/some-route',
+        'defaults' =&gt; [
+            'controller' =&gt; \Laminas\Mvc\Middleware\PipeSpec::class,
+            'middleware' =&gt; new \Laminas\Mvc\Middleware\PipeSpec(
+                SomeMiddleware::class,
+                SomeRequestHandler::class
+            ),
+        ],
+    ],
+],</code></pre>
+<h2 id="psr-15-middleware">PSR-15 Middleware</h2>
+<p>This package now supports only PSR-15 interfaces. Support of <code>http-interop/http-middleware</code> and <code>callable</code> middleware
+has been dropped. A <code>Closure</code> can still be used and its signature must match the signature of PSR-15 middleware:</p>
+<pre class="highlight"><code class="language-php">use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+static function (ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface</code></pre>
+<p>You have to rewrite all your existing handlers and middleware to implement <code>Psr\Http\Server\RequestHandlerInterface</code>
+or <code>Psr\Http\Server\MiddlewareInterface</code>, respectively. Alternatively, you can decorate your middleware using one of
+the <a href="https://docs.laminas.dev/laminas-stratigility/v3/creating-middleware/">decorators provided by laminas-stratigility</a>
+.</p>
+<p>Please also refer
+to <a href="https://docs.laminas.dev/laminas-stratigility/v3/migration/">laminas-stratigility v3 migration guide</a>
+if you used any of its features.</p>
+<h2 id="removed-route-match-params-from-request">Removed Route Match Params from Request</h2>
+<p>Previously, for the matched route both the <code>Laminas\Router\RouteMatch</code> object as well as individual matched params were
+added to the PSR-7 request as attributes. This is no longer the case and only the <code>RouteMatch</code> object can be accessed as
+PSR-7 request attribute: <code>$request-&gt;getAttribute(\Laminas\Router\RouteMatch::class);</code></p>
+<p>Consider the following route definition: <code>/show-album/:album_id</code>
+Previously, all matched parameters (in this case <code>album_id</code>) were available directly in the <code>$request</code> as an attribute:
+<code>$albumId = $request-&gt;getAttribute('album_id')</code>. Now, this is no longer the case. To get the <code>album_id</code> param you have
+to fetch it from the <code>RouteMatch</code> object:</p>
+<pre class="highlight"><code class="language-php">/** @var \Laminas\Router\RouteMatch $routeMatch */
+$routeMatch = $request-&gt;getAttribute(\Laminas\Router\RouteMatch::class);
+$albumId = $routeMatch-&gt;getParam('album_id');</code></pre>
+
+
+
+
+    <nav>
+    <ul class="page-nav hidden-print">
+
+        
+        <li class="page-nav__item">
+            
+                <a rel="prev" class="page-nav__link page-nav__link--prev" href="../dispatching-middleware/">
+                    <i class="fa fa-chevron-left"></i> Previous
+                </a>
+            
+        </li>
+
+        
+        <li class="page-nav__item">
+            
+                <a rel="next" class="page-nav__link page-nav__link--next" href="../../v1/intro/">
+                    Next <i class="fa fa-chevron-right"></i>
+                </a>
+            
+        </li>
+    </ul>
+</nav>
+
+
+
+
+    <div class="help-wanted">
+        <p>
+            Found a mistake or want to contribute to the documentation?
+            <a href="https://github.com/laminas/laminas-mvc-middleware/edit/master/docs/book/v2/migration.md" target="_blank" class="help-wanted__link">
+                Edit this page on GitHub!
+            </a>
+        </p>
+    </div>
+
+                
             </div>
             <div class="col-md-3 col-sm-12 sidebar">
                 <div class="donation-banner">
@@ -264,7 +473,7 @@
                     
     <div class="subnavigation hidden-print">
         <h4 class="subnavigation__title">
-            <a href="../.">laminas-mvc-middleware</a>
+            <a href="../..">laminas-mvc-middleware</a>
         </h4>
 
         <h5 class="subnavigation__subtitle">Table of Contents</h5>
@@ -274,8 +483,45 @@
 
                 
                 
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../intro/" class="subnavigation__link">Introduction</a>
+    </li>
 
                     
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../installation/" class="subnavigation__link">Installation</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../quick-start/" class="subnavigation__link">Quick Start</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../dispatching-middleware/" class="subnavigation__link">Dispatching Middleware</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item">
+        <span class="subnavigation__headline">Migration</span>
+        <ul class="subnavigation__list">
+            
+                
+    <li class="subnavigation__list-item subnavigation__list-item--active">
+        <a href="./" class="subnavigation__link">Migration from Version 1</a>
+    </li>
+
+            
+        </ul>
+    </li>
+
                     
                 
             
@@ -373,13 +619,13 @@
 </footer>
 
     <script>
-        let base_url = '..',
+        let base_url = '../..',
             project  = "mvc",
             siteName = 'laminas-mvc-middleware';
     </script>
     <script src="https://docs.laminas.dev/js/scripts.js"></script>
     
-        <script src="../search/main.js"></script>
+        <script src="../../search/main.js"></script>
     
 
     

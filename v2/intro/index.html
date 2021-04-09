@@ -6,9 +6,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Dispatch middleware pipelines in place of controllers in laminas-mvc.">  
+    <link rel="canonical" href="https://docs.laminas.dev/laminas-mvc-middleware/v2/intro/">
     <link rel="shortcut icon" href="https://docs.laminas.dev/img/trademark-laminas-foundation-rgb.svg">
 
-    <title>laminas-mvc-middleware - Laminas Docs</title>
+    <title>Introduction - laminas-mvc-middleware - Laminas Docs</title>
 
     <link rel="stylesheet" href="https://docs.laminas.dev/css/styles.css">
     
@@ -114,7 +115,7 @@
                     
     <div class="subnavigation hidden-print">
         <h4 class="subnavigation__title">
-            <a href="../.">laminas-mvc-middleware</a>
+            <a href="../..">laminas-mvc-middleware</a>
         </h4>
 
         <h5 class="subnavigation__subtitle">Table of Contents</h5>
@@ -124,8 +125,45 @@
 
                 
                 
+                    
+                        
+    <li class="subnavigation__list-item subnavigation__list-item--active">
+        <a href="./" class="subnavigation__link">Introduction</a>
+    </li>
 
                     
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../installation/" class="subnavigation__link">Installation</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../quick-start/" class="subnavigation__link">Quick Start</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../dispatching-middleware/" class="subnavigation__link">Dispatching Middleware</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item">
+        <span class="subnavigation__headline">Migration</span>
+        <ul class="subnavigation__list">
+            
+                
+    <li class="subnavigation__list-item ">
+        <a href="../migration/" class="subnavigation__link">Migration from Version 1</a>
+    </li>
+
+            
+        </ul>
+    </li>
+
                     
                 
             
@@ -188,7 +226,7 @@
         <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-left" aria-labelledby="version-selector-dropdown">
             
                 
-                    <a href="../v2/intro/" class="dropdown-item">
+                    <a href="./" class="dropdown-item active">
                         
                             v2 (latest)
                         
@@ -196,7 +234,7 @@
                 
             
                 
-                    <a href="../v1/intro/" class="dropdown-item">
+                    <a href="../../v1/intro/" class="dropdown-item">
                         
                             v1
                         
@@ -227,21 +265,118 @@
                 
                 
                     
+    
+
+    
+    
+        <div class="toc">
+            <h6 class="toc__headline">On this page</h6>
+            <ul class="toc__list">
+                
+                    <li class="toc__entry">
+                        <a href="#dispatching-psr-15-middleware-and-request-handlers" class="toc__link nav-link">Dispatching PSR-15 Middleware and Request Handlers</a>
+                    </li>
+                
+            </ul>
+        </div>
+    
+
                 
 
                 
+                    <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        
+            <li class="breadcrumb-item"><a href="https://docs.laminas.dev/">Overview</a></li>
+            <li class="breadcrumb-item"><a href="https://docs.laminas.dev/mvc/">MVC</a></li>
 
-<h1 class="content__title">404</h1>
-<blockquote>
-    <h3>Something went wrong!</h3>
-    <p>
-        We're sorry, but the page you are looking for does not exist.
-    </p>
-</blockquote>
+            
+                <li class="breadcrumb-item"><a href="../..">laminas-mvc-middleware</a></li>
 
-<a href="../." class="btn btn-default" role="button">Go to homepage</a>
+                
+                    
+                        
+                        
+                    
+                
+
+                <li class="breadcrumb-item active" aria-current="page">Introduction</li>
+            
+        
+    </ol>
+</nav>
 
 
+
+
+
+
+    
+    
+
+    <h1 id="introduction">Introduction</h1>
+<p>This library provides the ability to dispatch middleware pipelines in place of
+controllers within <a href="https://docs.laminas.dev/laminas-mvc/">laminas-mvc</a>.</p>
+<h2 id="dispatching-psr-15-middleware-and-request-handlers">Dispatching PSR-15 Middleware and Request Handlers</h2>
+<p><a href="https://www.php-fig.org/psr/psr-7/">PSR-7</a> defines interfaces for HTTP messages, and is now being adopted by many
+frameworks. <a href="https://www.php-fig.org/psr/psr-15/">PSR-15</a> describes Middleware and Request Handler interfaces, which
+consume PSR-7 messages; Laminas itself offers a parallel microframework targeting PSR-7/PSR-15
+with <a href="https://docs.mezzio.dev/mezzio">Mezzio</a>. What if you want to dispatch PSR-15 middleware and request handlers from
+laminas-mvc?</p>
+<p>laminas-mvc currently uses <a href="https://docs.laminas.dev/laminas-http/">laminas-http</a>
+for its HTTP transport layer, and the objects it defines are not compatible with PSR-7, meaning the basic MVC layer does
+not and cannot make use of PSR-7 currently.</p>
+<p>However, starting with version 2.7.0, laminas-mvc offers
+<code>Laminas\Mvc\MiddlewareListener</code>. This <code>Laminas\Mvc\MvcEvent::EVENT_DISPATCH</code>
+listener listens prior to the default <code>DispatchListener</code>, and executes if the route matches contain a "middleware"
+parameter, and the service that resolves to is callable. When those conditions are met, it uses
+the <a href="https://docs.laminas.dev/laminas-psr7bridge/">PSR-7 bridge</a>
+to convert the laminas-http request and response objects into PSR-7 instances, and then invokes the middleware.</p>
+<p>Starting with laminas-mvc version 3.2.0, <code>Laminas\Mvc\MiddlewareListener</code> is deprecated and replaced
+by <code>Laminas\Mvc\Middleware\MiddlewareListener</code> provided by this package.<br />
+After package installation, <code>Laminas\Mvc\Middleware</code> module must be registered in your laminas-mvc based application. If
+the <a href="https://docs.laminas.dev/laminas-component-installer/">laminas-component-installer</a>
+is installed, it will handle the module registration automatically.</p>
+
+
+
+
+    <nav>
+    <ul class="page-nav hidden-print">
+
+        
+        <li class="page-nav__item">
+            
+                <a rel="prev" class="page-nav__link page-nav__link--prev" href="../..">
+                    <i class="fa fa-chevron-left"></i> Previous
+                </a>
+            
+        </li>
+
+        
+        <li class="page-nav__item">
+            
+                <a rel="next" class="page-nav__link page-nav__link--next" href="../installation/">
+                    Next <i class="fa fa-chevron-right"></i>
+                </a>
+            
+        </li>
+    </ul>
+</nav>
+
+
+
+
+    <div class="help-wanted">
+        <p>
+            Found a mistake or want to contribute to the documentation?
+            <a href="https://github.com/laminas/laminas-mvc-middleware/edit/master/docs/book/v2/intro.md" target="_blank" class="help-wanted__link">
+                Edit this page on GitHub!
+            </a>
+        </p>
+    </div>
+
+                
             </div>
             <div class="col-md-3 col-sm-12 sidebar">
                 <div class="donation-banner">
@@ -264,7 +399,7 @@
                     
     <div class="subnavigation hidden-print">
         <h4 class="subnavigation__title">
-            <a href="../.">laminas-mvc-middleware</a>
+            <a href="../..">laminas-mvc-middleware</a>
         </h4>
 
         <h5 class="subnavigation__subtitle">Table of Contents</h5>
@@ -274,8 +409,45 @@
 
                 
                 
+                    
+                        
+    <li class="subnavigation__list-item subnavigation__list-item--active">
+        <a href="./" class="subnavigation__link">Introduction</a>
+    </li>
 
                     
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../installation/" class="subnavigation__link">Installation</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../quick-start/" class="subnavigation__link">Quick Start</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../dispatching-middleware/" class="subnavigation__link">Dispatching Middleware</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item">
+        <span class="subnavigation__headline">Migration</span>
+        <ul class="subnavigation__list">
+            
+                
+    <li class="subnavigation__list-item ">
+        <a href="../migration/" class="subnavigation__link">Migration from Version 1</a>
+    </li>
+
+            
+        </ul>
+    </li>
+
                     
                 
             
@@ -373,13 +545,13 @@
 </footer>
 
     <script>
-        let base_url = '..',
+        let base_url = '../..',
             project  = "mvc",
             siteName = 'laminas-mvc-middleware';
     </script>
     <script src="https://docs.laminas.dev/js/scripts.js"></script>
     
-        <script src="../search/main.js"></script>
+        <script src="../../search/main.js"></script>
     
 
     

@@ -6,10 +6,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Dispatch middleware pipelines in place of controllers in laminas-mvc.">  
-    <link rel="canonical" href="https://docs.laminas.dev/laminas-mvc-middleware/">
+    <link rel="canonical" href="https://docs.laminas.dev/laminas-mvc-middleware/v2/dispatching-middleware/">
     <link rel="shortcut icon" href="https://docs.laminas.dev/img/trademark-laminas-foundation-rgb.svg">
 
-    <title>laminas-mvc-middleware - Laminas Docs</title>
+    <title>Dispatching Middleware - laminas-mvc-middleware - Laminas Docs</title>
 
     <link rel="stylesheet" href="https://docs.laminas.dev/css/styles.css">
     
@@ -115,7 +115,7 @@
                     
     <div class="subnavigation hidden-print">
         <h4 class="subnavigation__title">
-            <a href=".">laminas-mvc-middleware</a>
+            <a href="../..">laminas-mvc-middleware</a>
         </h4>
 
         <h5 class="subnavigation__subtitle">Table of Contents</h5>
@@ -128,25 +128,25 @@
                     
                         
     <li class="subnavigation__list-item ">
-        <a href="v2/intro/" class="subnavigation__link">Introduction</a>
+        <a href="../intro/" class="subnavigation__link">Introduction</a>
     </li>
 
                     
                         
     <li class="subnavigation__list-item ">
-        <a href="v2/installation/" class="subnavigation__link">Installation</a>
+        <a href="../installation/" class="subnavigation__link">Installation</a>
     </li>
 
                     
                         
     <li class="subnavigation__list-item ">
-        <a href="v2/quick-start/" class="subnavigation__link">Quick Start</a>
+        <a href="../quick-start/" class="subnavigation__link">Quick Start</a>
     </li>
 
                     
                         
-    <li class="subnavigation__list-item ">
-        <a href="v2/dispatching-middleware/" class="subnavigation__link">Dispatching Middleware</a>
+    <li class="subnavigation__list-item subnavigation__list-item--active">
+        <a href="./" class="subnavigation__link">Dispatching Middleware</a>
     </li>
 
                     
@@ -157,7 +157,7 @@
             
                 
     <li class="subnavigation__list-item ">
-        <a href="v2/migration/" class="subnavigation__link">Migration from Version 1</a>
+        <a href="../migration/" class="subnavigation__link">Migration from Version 1</a>
     </li>
 
             
@@ -226,7 +226,7 @@
         <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-left" aria-labelledby="version-selector-dropdown">
             
                 
-                    <a href="v2/intro/" class="dropdown-item">
+                    <a href="../intro/" class="dropdown-item active">
                         
                             v2 (latest)
                         
@@ -234,7 +234,7 @@
                 
             
                 
-                    <a href="v1/intro/" class="dropdown-item">
+                    <a href="../../v1/intro/" class="dropdown-item">
                         
                             v1
                         
@@ -264,6 +264,44 @@
             <div class="col-md-9 col-sm-12 content" role="main">
                 
                 
+                    
+    
+
+    
+    
+        <div class="toc">
+            <h6 class="toc__headline">On this page</h6>
+            <ul class="toc__list">
+                
+                    <li class="toc__entry">
+                        <a href="#middlewareinterface-or-requesthandlerinterface-service-strings" class="toc__link nav-link">MiddlewareInterface or RequestHandlerInterface Service Strings</a>
+                    </li>
+                
+                    <li class="toc__entry">
+                        <a href="#pipespec-with-psr-15-service-names" class="toc__link nav-link">PipeSpec with PSR-15 Service Names</a>
+                    </li>
+                
+                    <li class="toc__entry">
+                        <a href="#anonymous-interface-implementations" class="toc__link nav-link">Anonymous Interface Implementations</a>
+                    </li>
+                
+                    <li class="toc__entry">
+                        <a href="#closures" class="toc__link nav-link">Closures</a>
+                    </li>
+                
+                    <li class="toc__entry">
+                        <a href="#mixed-pipespec-arguments" class="toc__link nav-link">Mixed PipeSpec Arguments</a>
+                    </li>
+                
+                    <li class="toc__entry">
+                        <a href="#defining-middleware-placeholder-in-route-definition" class="toc__link nav-link">Defining :middleware Placeholder in Route Definition</a>
+                    </li>
+                
+            </ul>
+        </div>
+    
+
+                
 
                 
                     <nav aria-label="breadcrumb">
@@ -273,7 +311,16 @@
             <li class="breadcrumb-item"><a href="https://docs.laminas.dev/mvc/">MVC</a></li>
 
             
-                <li class="breadcrumb-item">laminas-mvc-middleware</li>
+                <li class="breadcrumb-item"><a href="../..">laminas-mvc-middleware</a></li>
+
+                
+                    
+                        
+                        
+                    
+                
+
+                <li class="breadcrumb-item active" aria-current="page">Dispatching Middleware</li>
             
         
     </ol>
@@ -283,22 +330,251 @@
 
 
 
-    <h1>laminas-mvc-middleware</h1>
-<p>Dispatch middleware pipelines in place of controllers in laminas-mvc.</p>
 
+    
+    
 
-    <h2>Installation</h2>
-    <h3>Using Composer</h3>
-    <pre><code class="language-bash">$ composer require laminas/laminas-mvc-middleware</code></pre>
+    <h1 id="dispatching-middleware">Dispatching Middleware</h1>
+<p>Apart from PSR-15 <code>Psr\Http\Server\MiddlewareInterface</code> or <code>Psr\Http\Server\RequestHandlerInterface</code> middleware or
+service name strings which resolve to such instances, the <code>middleware</code> key in the route definition takes also an
+instance of the <code>PipeSpec</code> class for the middleware pipe comprising the former.</p>
+<p>Technically, middleware or middleware pipe defined in each individual mvc route is a complete request handler:
+it must produce a response and cannot delegate to a controller or middleware defined in another route.</p>
+<p>Here are some examples how middleware can be dispatched:</p>
+<h2 id="middlewareinterface-or-requesthandlerinterface-service-strings"><code>MiddlewareInterface</code> or <code>RequestHandlerInterface</code> Service Strings</h2>
+<p>If you only dispatch one class, the preferred method is passing a container service class-string or alias which
+resolves to a PSR-15 <code>Psr\Http\Server\MiddlewareInterface</code> or <code>Psr\Http\Server\RequestHandlerInterface</code>.</p>
+<p><code>Laminas\Stratigility\MiddlewarePipe</code> implements both interfaces and could be provided by the application container
+as a configured instance. It is what is used internally for the <code>PipeSpec</code> definitions.</p>
+<pre class="highlight"><code class="language-php">use Application\Handler\AlbumDetailHandler;
+use Application\Middleware\AlbumDetailMiddlewarePipe;
+use Laminas\Mvc\Middleware\PipeSpec;
+use Laminas\Router\Http\Literal;
 
+return [
+    'router' =&gt; [
+        'routes' =&gt; [
+            'container-handler-class-literal' =&gt; [
+                'type' =&gt; Literal::class,
+                'options' =&gt; [
+                    'route' =&gt; '/container-handler-class-literal',
+                    'defaults' =&gt; [
+                        'controller' =&gt; PipeSpec::class,
+                        'middleware' =&gt; AlbumDetailHandler::class,
+                    ],
+                ],
+            ],
+            'container-handler' =&gt; [
+                'type' =&gt; Literal::class,
+                'options' =&gt; [
+                    'route' =&gt; '/container-handler',
+                    'defaults' =&gt; [
+                        'controller' =&gt; PipeSpec::class,
+                        'middleware' =&gt; 'container_id_for_album_detail_handler',
+                    ],
+                ],
+            ],
+            'container-pipe' =&gt; [
+                'type' =&gt; Literal::class,
+                'options' =&gt; [
+                    'route' =&gt; '/container-pipe',
+                    'defaults' =&gt; [
+                        'controller' =&gt; PipeSpec::class,
+                        'middleware' =&gt; AlbumDetailMiddlewarePipe::class,
+                    ],
+                ],
+            ],
+             'container-middleware' =&gt; [
+                 'type' =&gt; Literal::class,
+                 'options' =&gt; [
+                     'route' =&gt; '/container-middleware',
+                     'defaults' =&gt; [
+                         'controller' =&gt; PipeSpec::class,
+                         'middleware' =&gt; SomeMiddleware::class,
+                     ],
+                 ],
+             ],
+       ],
+    ],
+];</code></pre>
+<h2 id="pipespec-with-psr-15-service-names"><code>PipeSpec</code> with PSR-15 Service Names</h2>
+<p>Middleware can be passed as a <code>PipeSpec</code> object with container service class-string literals. This is the preferred
+method, if you need to dispatch multiple middleware instances.</p>
+<p>Assuming you have two middleware, <code>Application\Middleware\SelectLanguageMiddleware</code> which determines the language of
+the visitor and <code>Application\Middleware\AlbumFromRouteMiddleware</code> which fetches an <code>Album</code> object by the ID in the route
+param. Both of them add this information to the <code>ServerRequestInterface</code> attributes which can be used by the
+<code>Application\Handler\AlbumDetailHandler</code> at the end of the pipe:</p>
+<pre class="highlight"><code class="language-php">use Application\Handler\AlbumDetailHandler;
+use Application\Middleware\AlbumFromRouteMiddlware;
+use Application\Middleware\SelectLanguageMiddleware;
+use Laminas\Mvc\Middleware\PipeSpec;
+use Laminas\Router\Http\Segment;
 
-<h2>Support</h2>
-<ul>
-    <li>Issues: <a href="https://github.com/laminas/laminas-mvc-middleware/issues">github.com/laminas/laminas-mvc-middleware/issues</a></li>
-    <li>Source: <a href="https://github.com/laminas/laminas-mvc-middleware/">github.com/laminas/laminas-mvc-middleware/</a></li>
-    <li>Chat: <a href="https://laminas.dev/chat">laminas.dev/chat</a></li>
-    <li>Forum: <a href="https://discourse.laminas.dev/">discourse.laminas.dev</a></li>
-</ul>
+return [
+    'router' =&gt; [
+        'routes' =&gt; [
+            'album-details' =&gt; [
+                'type' =&gt; Segment::class,
+                'options' =&gt; [
+                    'route' =&gt; '/album/:album_id',
+                    'defaults' =&gt; [
+                        'controller' =&gt; PipeSpec::class,
+                        'middleware' =&gt; new PipeSpec(
+                            SelectLanguageMiddleware::class,
+                            AlbumFromRouteMiddelware::class,
+                            AlbumDetailHandler::class
+                        ),
+                    ],
+                ],
+            ],
+        ],
+    ],
+];</code></pre>
+<h2 id="anonymous-interface-implementations">Anonymous Interface Implementations</h2>
+<p>You can also pass an anonymous class which implements <code>MiddlewareInterface</code> or <code>RequestHandlerInterface</code> directly.
+This is intended primarily for development because it can cause issues with configuration caching.</p>
+<pre class="highlight"><code class="language-php">use Laminas\Diactoros\Response\TextResponse;
+use Laminas\Mvc\Middleware\PipeSpec;
+use Laminas\Router\Http\Literal;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+return [
+    'router' =&gt; [
+        'routes' =&gt; [
+            'instance-middleware' =&gt; [
+                'type' =&gt; Literal::class,
+                'options' =&gt; [
+                    'route' =&gt; '/instance-middleware',
+                    'defaults' =&gt; [
+                        'controller' =&gt; PipeSpec::class,
+                        'middleware' =&gt; new class implements MiddlewareInterface {
+                            public function process(
+                                ServerRequestInterface $request,
+                                RequestHandlerInterface $handler
+                            ): ResponseInterface {
+                                // You have to return a response directly because attempting to use $handler here will
+                                // always result in an empty pipeline exception.
+                                // This middleware pipe does not delegate to controllers or middleware from other routes.
+                                return new TextResponse('Hello!');
+                            }
+                        },
+                    ],
+                ],
+            ],
+            'instance-handler' =&gt; [
+                'type' =&gt; Literal::class,
+                'options' =&gt; [
+                    'route' =&gt; '/instance-handler',
+                    'defaults' =&gt; [
+                        'controller' =&gt; PipeSpec::class,
+                        'middleware' =&gt; new class implements RequestHandlerInterface {
+                            public function handle(
+                                ServerRequestInterface $request
+                            ): ResponseInterface {
+                                return new TextResponse('Hello!');
+                            }
+                        },
+                    ],
+                ],
+            ],
+        ],
+    ],
+];</code></pre>
+<h2 id="closures">Closures</h2>
+<p>A <code>Closure</code> can also be passed directly. This should also be used only for development.</p>
+<pre class="highlight"><code class="language-php">use Laminas\Mvc\Middleware\PipeSpec;
+use Laminas\Router\Http\Literal;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+return [
+    'router' =&gt; [
+        'routes' =&gt; [
+            'closure' =&gt; [
+                'type'    =&gt; Literal::class,
+                'options' =&gt; [
+                    'route'    =&gt; '/closure',
+                    'defaults' =&gt; [
+                        'controller' =&gt; PipeSpec::class,
+                        'middleware' =&gt; static function (
+                            ServerRequestInterface $request,
+                            RequestHandlerInterface $handler
+                        ): ResponseInterface {
+                            return $handler-&gt;handle($request);
+                        },
+                    ],
+                ],
+            ],
+        ],
+    ],
+];</code></pre>
+<h2 id="mixed-pipespec-arguments">Mixed <code>PipeSpec</code> Arguments</h2>
+<p>In this example multiple different possible parameters are passed to <code>PipeSpec</code>:</p>
+<pre class="highlight"><code class="language-php">use Application\Handler\AlbumDetailHandler;
+use Laminas\Mvc\Middleware\PipeSpec;
+use Laminas\Router\Http\Literal;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+return [
+    'router' =&gt; [
+        'routes' =&gt; [
+            'instance-pipespec-dev-env' =&gt; [
+                'type' =&gt; Literal::class,
+                'options' =&gt; [
+                    'route' =&gt; '/instance-pipespec-dev-env',
+                    'defaults' =&gt; [
+                        'controller' =&gt; PipeSpec::class,
+                        'middleware' =&gt; new PipeSpec(
+
+                            // id/alias of service in container
+                            'container_id_for_album_middleware',
+
+                            // anonymous class implementing a MiddlewareInterface
+                            new class implements MiddlewareInterface {
+                                public function process(
+                                    ServerRequestInterface $request,
+                                    RequestHandlerInterface $handler
+                                ): ResponseInterface {
+                                    return $handler-&gt;handle($request);
+                                }
+                            },
+
+                            // Closure
+                            static function (
+                                ServerRequestInterface $request,
+                                RequestHandlerInterface $handler
+                            ): ResponseInterface {
+                                return $handler-&gt;handle($request);
+                            },
+
+                            // class-string of a handler as a convenient way to specify id/alias
+                            // which must be resolved by the container
+                            AlbumDetailHandler::class,
+                        ),
+                    ],
+                ],
+            ],
+        ],
+    ],
+];</code></pre>
+<blockquote>
+<h3 id="note">Note</h3>
+<p>Please note that if you pass instances of middleware or handlers directly, it might not be compatible with config caching.
+You should use that for development only. The recommended variant is passing container managed middleware
+like <code>SomeRequestHandler::class</code>.</p>
+</blockquote>
+<h2 id="defining-middleware-placeholder-in-route-definition">Defining <code>:middleware</code> Placeholder in Route Definition</h2>
+<p>Although you can define a <code>:middleware</code> placeholder in your middleware route definition, we are strongly advising
+against doing so. This can be utilized maliciously to invoke middleware that was never intended to be called directly.
+Since middleware lookup uses the main application container, it can also be abused to cause instantiation of expensive
+services leading to a DoS vulnerability.</p>
 
 
 
@@ -309,12 +585,16 @@
         
         <li class="page-nav__item">
             
+                <a rel="prev" class="page-nav__link page-nav__link--prev" href="../quick-start/">
+                    <i class="fa fa-chevron-left"></i> Previous
+                </a>
+            
         </li>
 
         
         <li class="page-nav__item">
             
-                <a rel="next" class="page-nav__link page-nav__link--next" href="v2/intro/">
+                <a rel="next" class="page-nav__link page-nav__link--next" href="../migration/">
                     Next <i class="fa fa-chevron-right"></i>
                 </a>
             
@@ -324,6 +604,15 @@
 
 
 
+
+    <div class="help-wanted">
+        <p>
+            Found a mistake or want to contribute to the documentation?
+            <a href="https://github.com/laminas/laminas-mvc-middleware/edit/master/docs/book/v2/dispatching-middleware.md" target="_blank" class="help-wanted__link">
+                Edit this page on GitHub!
+            </a>
+        </p>
+    </div>
 
                 
             </div>
@@ -348,7 +637,7 @@
                     
     <div class="subnavigation hidden-print">
         <h4 class="subnavigation__title">
-            <a href=".">laminas-mvc-middleware</a>
+            <a href="../..">laminas-mvc-middleware</a>
         </h4>
 
         <h5 class="subnavigation__subtitle">Table of Contents</h5>
@@ -361,25 +650,25 @@
                     
                         
     <li class="subnavigation__list-item ">
-        <a href="v2/intro/" class="subnavigation__link">Introduction</a>
+        <a href="../intro/" class="subnavigation__link">Introduction</a>
     </li>
 
                     
                         
     <li class="subnavigation__list-item ">
-        <a href="v2/installation/" class="subnavigation__link">Installation</a>
+        <a href="../installation/" class="subnavigation__link">Installation</a>
     </li>
 
                     
                         
     <li class="subnavigation__list-item ">
-        <a href="v2/quick-start/" class="subnavigation__link">Quick Start</a>
+        <a href="../quick-start/" class="subnavigation__link">Quick Start</a>
     </li>
 
                     
                         
-    <li class="subnavigation__list-item ">
-        <a href="v2/dispatching-middleware/" class="subnavigation__link">Dispatching Middleware</a>
+    <li class="subnavigation__list-item subnavigation__list-item--active">
+        <a href="./" class="subnavigation__link">Dispatching Middleware</a>
     </li>
 
                     
@@ -390,7 +679,7 @@
             
                 
     <li class="subnavigation__list-item ">
-        <a href="v2/migration/" class="subnavigation__link">Migration from Version 1</a>
+        <a href="../migration/" class="subnavigation__link">Migration from Version 1</a>
     </li>
 
             
@@ -494,13 +783,13 @@
 </footer>
 
     <script>
-        let base_url = '.',
+        let base_url = '../..',
             project  = "mvc",
             siteName = 'laminas-mvc-middleware';
     </script>
     <script src="https://docs.laminas.dev/js/scripts.js"></script>
     
-        <script src="search/main.js"></script>
+        <script src="../../search/main.js"></script>
     
 
     
@@ -529,8 +818,3 @@
 
 
 </html>
-
-<!--
-MkDocs version : 1.1.2
-Build Date UTC : 2021-04-09 13:54:40.010816+00:00
--->

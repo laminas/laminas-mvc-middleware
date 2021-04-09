@@ -6,9 +6,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Dispatch middleware pipelines in place of controllers in laminas-mvc.">  
+    <link rel="canonical" href="https://docs.laminas.dev/laminas-mvc-middleware/v2/quick-start/">
     <link rel="shortcut icon" href="https://docs.laminas.dev/img/trademark-laminas-foundation-rgb.svg">
 
-    <title>laminas-mvc-middleware - Laminas Docs</title>
+    <title>Quick Start - laminas-mvc-middleware - Laminas Docs</title>
 
     <link rel="stylesheet" href="https://docs.laminas.dev/css/styles.css">
     
@@ -114,7 +115,7 @@
                     
     <div class="subnavigation hidden-print">
         <h4 class="subnavigation__title">
-            <a href="../.">laminas-mvc-middleware</a>
+            <a href="../..">laminas-mvc-middleware</a>
         </h4>
 
         <h5 class="subnavigation__subtitle">Table of Contents</h5>
@@ -124,8 +125,45 @@
 
                 
                 
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../intro/" class="subnavigation__link">Introduction</a>
+    </li>
 
                     
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../installation/" class="subnavigation__link">Installation</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item subnavigation__list-item--active">
+        <a href="./" class="subnavigation__link">Quick Start</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../dispatching-middleware/" class="subnavigation__link">Dispatching Middleware</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item">
+        <span class="subnavigation__headline">Migration</span>
+        <ul class="subnavigation__list">
+            
+                
+    <li class="subnavigation__list-item ">
+        <a href="../migration/" class="subnavigation__link">Migration from Version 1</a>
+    </li>
+
+            
+        </ul>
+    </li>
+
                     
                 
             
@@ -188,7 +226,7 @@
         <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-left" aria-labelledby="version-selector-dropdown">
             
                 
-                    <a href="../v2/intro/" class="dropdown-item">
+                    <a href="../intro/" class="dropdown-item active">
                         
                             v2 (latest)
                         
@@ -196,7 +234,7 @@
                 
             
                 
-                    <a href="../v1/intro/" class="dropdown-item">
+                    <a href="../../v1/intro/" class="dropdown-item">
                         
                             v1
                         
@@ -227,21 +265,248 @@
                 
                 
                     
+    
+
+    
+    
+        <div class="toc">
+            <h6 class="toc__headline">On this page</h6>
+            <ul class="toc__list">
                 
+                    <li class="toc__entry">
+                        <a href="#mapping-routes-to-middleware-and-request-handlers" class="toc__link nav-link">Mapping Routes to Middleware and Request Handlers</a>
+                    </li>
+                
+                    <li class="toc__entry">
+                        <a href="#middleware-services" class="toc__link nav-link">Middleware Services</a>
+                    </li>
+                
+                    <li class="toc__entry">
+                        <a href="#writing-middleware" class="toc__link nav-link">Writing Middleware</a>
+                    </li>
+                
+                    <li class="toc__entry">
+                        <a href="#middleware-return-values" class="toc__link nav-link">Middleware Return Values</a>
+                    </li>
+                
+            </ul>
+        </div>
+    
 
                 
 
-<h1 class="content__title">404</h1>
+                
+                    <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        
+            <li class="breadcrumb-item"><a href="https://docs.laminas.dev/">Overview</a></li>
+            <li class="breadcrumb-item"><a href="https://docs.laminas.dev/mvc/">MVC</a></li>
+
+            
+                <li class="breadcrumb-item"><a href="../..">laminas-mvc-middleware</a></li>
+
+                
+                    
+                        
+                        
+                    
+                
+
+                <li class="breadcrumb-item active" aria-current="page">Quick Start</li>
+            
+        
+    </ol>
+</nav>
+
+
+
+
+
+
+    
+    
+
+    <h1 id="quick-start">Quick Start</h1>
+<h2 id="mapping-routes-to-middleware-and-request-handlers">Mapping Routes to Middleware and Request Handlers</h2>
+<p>The first step is to map a route to PSR-15 middleware or request handler. This looks like any other
+<a href="https://docs.laminas.dev/laminas-mvc/routing/">routing</a> configuration, with small changes: the <code>controller</code> key in the
+routing options has to be the <code>Laminas\Mvc\Middleware\PipeSpec</code> class literal, and you provide a <code>middleware</code> key.</p>
+<p>For example, to register an <code>AlbumListHandler</code> located in the <code>module/Application/Handler</code> directory to the routes of
+your <code>Application</code> module, add the following route to <code>module/Application/config/module.config.php</code>:</p>
+<pre class="highlight"><code class="language-php">use Application\Handler\AlbumListHandler;
+use Laminas\Mvc\Middleware\PipeSpec;
+use Laminas\Router\Http\Literal;
+
+return [
+    'router' =&gt; [
+        'routes' =&gt; [
+            'album-list' =&gt; [
+                'type' =&gt; Literal::class,
+                'options' =&gt; [
+                    'route' =&gt; '/albums',
+                    'defaults' =&gt; [
+                        'controller' =&gt; PipeSpec::class,
+                        'middleware' =&gt; AlbumListHandler::class,
+                    ],
+                ],
+            ],
+        ],
+    ],
+];</code></pre>
+<p>Middleware may be provided as instance of a PSR-15 <code>Psr\Http\Server\MiddlewareInterface</code>
+or <code>Psr\Http\Server\RequestHandlerInterface</code>
+or as service name strings resolving to such instances.<br />
+You may also specify an instance of the <code>PipeSpec</code> class which accepts both middleware types above or their service name
+strings, or a <code>Closure</code> . These will then be piped into a <code>Laminas\Stratigility\MiddlewarePipe</code> instance in the order in
+which they are present in the <code>PipeSpec</code>. See <a href="routing-middleware.md">routing middleware</a> for examples.</p>
 <blockquote>
-    <h3>Something went wrong!</h3>
-    <p>
-        We're sorry, but the page you are looking for does not exist.
-    </p>
+<h3 id="no-action-required">No Action Required</h3>
+<p>Unlike action controllers, middleware typically is single purpose, and, as
+such, does not require a default <code>action</code> parameter.</p>
 </blockquote>
+<h2 id="middleware-services">Middleware Services</h2>
+<p>Middleware are pulled from the application service manager, unlike controllers in a normal
+<a href="https://docs.laminas.dev/laminas-mvc/">laminas-mvc</a> dispatch cycle, which are pulled from a
+dedicated <code>ControllerManager</code>.</p>
+<p>Middleware retrieved <strong>must</strong> be a PSR-15 <code>MiddlewareInterface</code> or <code>RequestHandlerInterface</code> instance.
+Otherwise, <code>MiddlewareListener</code> will create an error response.</p>
+<h2 id="writing-middleware">Writing Middleware</h2>
+<p>The next step is writing actual middleware to dispatch. PSR-15 defines two different interfaces:</p>
+<h3 id="middlewareinterface-vs-requesthandlerinterface"><code>MiddlewareInterface</code> vs. <code>RequestHandlerInterface</code></h3>
+<p><em>Middleware</em> is code sitting between a request and a response; it typically analyzes the request to aggregate incoming data, delegates it to another layer to process, and then creates and returns a response.</p>
+<p>A <em>RequestHandler</em> is a class that receives a request and returns a response, without delegating to other layers of the application. This is generally the inner-most layer of your application.</p>
+<p>For more in-depth documentation visit the documentation for <a href="https://docs.mezzio.dev/mezzio/v3/getting-started/features/">Mezzio</a>
+and <a href="https://docs.laminas.dev/laminas-stratigility/v3/intro/">Stratigility</a> or the <a href="https://www.php-fig.org/psr/psr-15/">PSR-15 specification</a>.</p>
+<h3 id="request-handlers">Request Handlers</h3>
+<pre class="highlight"><code class="language-php">namespace Application\Handler;
 
-<a href="../." class="btn btn-default" role="button">Go to homepage</a>
+use Application\Entity\Album;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+class AlbumDetailMiddleware implements RequestHandlerInterface
+{
+    /** @var ResponseFactoryInterface */
+    private $responseFactory;
+    /** @var StreamFactoryInterface */
+    private $streamFactory;
+
+    public function __construct(ResponseFactoryInterface $responseFactory, StreamFactoryInterface $streamFactory)
+    {
+        $this-&gt;responseFactory = $responseFactory;
+        $this-&gt;streamFactory   = $streamFactory;
+    }
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        /** @var Album $album */
+        $album = $request-&gt;getAttribute('album');
+
+        $body = $this-&gt;streamFactory-&gt;createStream('The name of the album is: ' . $album-&gt;getName());
+        return $this-&gt;responseFactory-&gt;createResponse()-&gt;withBody($body);
+    }
+}</code></pre>
+<p>RequestHandlers resemble a single MVC Controller action, and will be used as the primary application functionality when
+dispatching a request.</p>
+<h3 id="middleware">Middleware</h3>
+<pre class="highlight"><code class="language-php">namespace Application\Middleware;
+
+use Application\Repository\AlbumRepositoryInterface;
+use Fig\Http\Message\StatusCodeInterface;
+use Laminas\Router\RouteMatch;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+class AlbumFromRouteMiddleware implements MiddlewareInterface
+{
+    /** @var AlbumRepositoryInterface */
+    private $albumRepository;
+    /** @var ResponseFactoryInterface */
+    private $responseFactory;
+
+    public function __construct(AlbumRepositoryInterface $albumRepository, ResponseFactoryInterface $responseFactory)
+    {
+        $this-&gt;albumRepository = $albumRepository;
+        $this-&gt;responseFactory = $responseFactory;
+    }
+
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        /** @var RouteMatch $routeMatch */
+        $routeMatch = $request-&gt;getAttribute(RouteMatch::class);
+        $albumId    = $routeMatch-&gt;getParam('album_id');
+        $album      = $this-&gt;albumRepository-&gt;findById($albumId);
+
+        // if no album was found, we short-circuit the pipe and return a 404 error:
+        if ($album === null) {
+            return $this-&gt;responseFactory-&gt;createResponse(
+                StatusCodeInterface::STATUS_NOT_FOUND,
+                sprintf('Album with ID %s not found!', $albumId)
+            );
+        }
+
+        // ...otherwise we populate the request with the album and call the RequestHandler
+        $request = $request-&gt;withAttribute('album', $album);
+        return $handler-&gt;handle($request);
+    }
+}</code></pre>
+<p>Middleware can return a direct response, in effect short-circuiting the middleware pipe, or pass request further
+while having a chance to act on passed request or returned response.
+Middleware in laminas-mvc is similar to <a href="https://docs.mezzio.dev/mezzio/v3/features/router/piping/#routing">routed middleware</a>
+in Mezzio.</p>
+<blockquote>
+<p>laminas-mvc does not have a global middleware pipe, so middleware can not be piped in front of MVC controllers.</p>
+</blockquote>
+<h2 id="middleware-return-values">Middleware Return Values</h2>
+<p>As middleware returns a PSR-7 response (<code>Psr\Http\Message\ResponseInterface</code>) it is converted back to a
+<a href="https://docs.laminas.dev/laminas-http/">laminas-http</a> response and returned by the <code>MiddlewareListener</code>, causing the
+application to short-circuit and return the response immediately.</p>
 
 
+
+
+    <nav>
+    <ul class="page-nav hidden-print">
+
+        
+        <li class="page-nav__item">
+            
+                <a rel="prev" class="page-nav__link page-nav__link--prev" href="../installation/">
+                    <i class="fa fa-chevron-left"></i> Previous
+                </a>
+            
+        </li>
+
+        
+        <li class="page-nav__item">
+            
+                <a rel="next" class="page-nav__link page-nav__link--next" href="../dispatching-middleware/">
+                    Next <i class="fa fa-chevron-right"></i>
+                </a>
+            
+        </li>
+    </ul>
+</nav>
+
+
+
+
+    <div class="help-wanted">
+        <p>
+            Found a mistake or want to contribute to the documentation?
+            <a href="https://github.com/laminas/laminas-mvc-middleware/edit/master/docs/book/v2/quick-start.md" target="_blank" class="help-wanted__link">
+                Edit this page on GitHub!
+            </a>
+        </p>
+    </div>
+
+                
             </div>
             <div class="col-md-3 col-sm-12 sidebar">
                 <div class="donation-banner">
@@ -264,7 +529,7 @@
                     
     <div class="subnavigation hidden-print">
         <h4 class="subnavigation__title">
-            <a href="../.">laminas-mvc-middleware</a>
+            <a href="../..">laminas-mvc-middleware</a>
         </h4>
 
         <h5 class="subnavigation__subtitle">Table of Contents</h5>
@@ -274,8 +539,45 @@
 
                 
                 
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../intro/" class="subnavigation__link">Introduction</a>
+    </li>
 
                     
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../installation/" class="subnavigation__link">Installation</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item subnavigation__list-item--active">
+        <a href="./" class="subnavigation__link">Quick Start</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item ">
+        <a href="../dispatching-middleware/" class="subnavigation__link">Dispatching Middleware</a>
+    </li>
+
+                    
+                        
+    <li class="subnavigation__list-item">
+        <span class="subnavigation__headline">Migration</span>
+        <ul class="subnavigation__list">
+            
+                
+    <li class="subnavigation__list-item ">
+        <a href="../migration/" class="subnavigation__link">Migration from Version 1</a>
+    </li>
+
+            
+        </ul>
+    </li>
+
                     
                 
             
@@ -373,13 +675,13 @@
 </footer>
 
     <script>
-        let base_url = '..',
+        let base_url = '../..',
             project  = "mvc",
             siteName = 'laminas-mvc-middleware';
     </script>
     <script src="https://docs.laminas.dev/js/scripts.js"></script>
     
-        <script src="../search/main.js"></script>
+        <script src="../../search/main.js"></script>
     
 
     

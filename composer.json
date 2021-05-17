@@ -1,7 +1,6 @@
 {
     "name": "laminas/laminas-mvc-middleware",
     "description": "Dispatch middleware pipelines in place of controllers in laminas-mvc.",
-    "license": "BSD-3-Clause",
     "keywords": [
         "laminas",
         "components",
@@ -11,22 +10,7 @@
         "psr-15"
     ],
     "homepage": "https://laminas.dev",
-    "support": {
-        "docs": "https://docs.laminas.dev/laminas-mvc-middleware/",
-        "issues": "https://github.com/laminas/laminas-mvc-middleware/issues",
-        "source": "https://github.com/laminas/laminas-mvc-middleware",
-        "rss": "https://github.com/laminas/laminas-mvc-middleware/releases.atom",
-        "chat": "https://laminas.dev/chat",
-        "forum": "https://discourse.laminas.dev"
-    },
-    "config": {
-        "sort-packages": true
-    },
-    "extra": {
-        "laminas": {
-            "component": "Laminas\\Mvc\\Middleware"
-        }
-    },
+    "license": "BSD-3-Clause",
     "require": {
         "php": "^7.3 || ~8.0.0",
         "laminas/laminas-mvc": "^3.2",
@@ -48,6 +32,14 @@
         "psalm/plugin-phpunit": "^0.15.1",
         "vimeo/psalm": "^4.6"
     },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laminas": {
+            "component": "Laminas\\Mvc\\Middleware"
+        }
+    },
     "autoload": {
         "psr-4": {
             "Laminas\\Mvc\\Middleware\\": "src/"
@@ -68,5 +60,13 @@
         "static-analysis": "psalm --shepherd --stats",
         "test": "phpunit --colors=always",
         "test-coverage": "phpunit --colors=always --coverage-clover clover.xml"
+    },
+    "support": {
+        "issues": "https://github.com/laminas/laminas-mvc-middleware/issues",
+        "forum": "https://discourse.laminas.dev",
+        "chat": "https://laminas.dev/chat",
+        "source": "https://github.com/laminas/laminas-mvc-middleware",
+        "docs": "https://docs.laminas.dev/laminas-mvc-middleware/",
+        "rss": "https://github.com/laminas/laminas-mvc-middleware/releases.atom"
     }
 }

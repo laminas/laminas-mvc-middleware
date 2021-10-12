@@ -11,8 +11,6 @@ nav:
           - Migration from Version 1: v2/migration.md
   - v1:
       - Introduction: v1/intro.md
-  - _hidden-legacy-page-links:
-      - _intro: intro.md
 site_name: laminas-mvc-middleware
 site_description: 'Dispatch middleware pipelines in place of controllers in laminas-mvc.'
 repo_url: 'https://github.com/laminas/laminas-mvc-middleware'
@@ -24,3 +22,8 @@ extra:
   versions:
     - v2
     - v1
+plugins:
+  - search
+  - redirects:
+      redirect_maps:
+        intro.md: v1/intro.md

@@ -13,11 +13,16 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+use function array_values;
+
 /**
  * @covers \Laminas\Mvc\Middleware\PipeSpec
  */
 class PipeSpecTest extends TestCase
 {
+    /**
+     * @psalm-suppress RedundantCast
+     */
     public function testAcceptsSpreadAndRetainsOrder(): void
     {
         $middleware = new class implements MiddlewareInterface {
@@ -31,10 +36,13 @@ class PipeSpecTest extends TestCase
         $spec       = new PipeSpec('container_key_string', $middleware, 'another_key');
         self::assertSame(
             ['container_key_string', $middleware, 'another_key'],
-            $spec->getSpec()
+            array_values($spec->getSpec())
         );
     }
 
+    /**
+     * @psalm-suppress RedundantCast
+     */
     public function testCanBeExportedAndReimported(): void
     {
         $middleware = static function (): ResponseInterface {
@@ -52,7 +60,7 @@ class PipeSpecTest extends TestCase
         $restoredSpec = $restoredPipeSpec->getSpec();
         self::assertEquals(
             ['container_key_string', $middleware, 'another_key'],
-            $restoredSpec
+            array_values($restoredSpec)
         );
     }
 

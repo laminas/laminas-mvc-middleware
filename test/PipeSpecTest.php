@@ -13,8 +13,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function array_values;
-
 /**
  * @covers \Laminas\Mvc\Middleware\PipeSpec
  */

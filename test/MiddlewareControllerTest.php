@@ -24,6 +24,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * @covers \Laminas\Mvc\Middleware\MiddlewareController
+ * @psalm-suppress InternalMethod
  */
 class MiddlewareControllerTest extends TestCase
 {

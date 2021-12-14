@@ -33,7 +33,7 @@ class PipeSpecTest extends TestCase
         $spec       = new PipeSpec('container_key_string', $middleware, 'another_key');
         self::assertSame(
             ['container_key_string', $middleware, 'another_key'],
-            array_values($spec->getSpec())
+            $spec->getSpec()
         );
     }
 
@@ -54,7 +54,7 @@ class PipeSpecTest extends TestCase
         $restoredSpec = $restoredPipeSpec->getSpec();
         self::assertEquals(
             ['container_key_string', $middleware, 'another_key'],
-            array_values($restoredSpec)
+            $restoredSpec
         );
     }
 

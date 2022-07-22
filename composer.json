@@ -51,7 +51,7 @@
         "laminas/laminas-router": "^3.3",
         "phpspec/prophecy-phpunit": "^2.0",
         "phpunit/phpunit": "^9.4",
-        "psalm/plugin-phpunit": "^0.15.1",
+        "psalm/plugin-phpunit": "^0.17.0",
         "vimeo/psalm": "^4.6"
     },
     "autoload": {

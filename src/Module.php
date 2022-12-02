@@ -16,8 +16,8 @@ class Module
                     DeprecatedMiddlewareListener::class => MiddlewareListener::class,
 
                     // Legacy Zend Framework aliases
-                    \Zend\Mvc\MiddlewareListener::class            => DeprecatedMiddlewareListener::class,
-                    \Zend\Mvc\Middleware\MiddlewareListener::class => MiddlewareListener::class,
+                    'Zend\Mvc\MiddlewareListener'            => DeprecatedMiddlewareListener::class,
+                    'Zend\Mvc\Middleware\MiddlewareListener' => MiddlewareListener::class,
                 ],
                 'factories' => [
                     MiddlewareListener::class => MiddlewareListenerFactory::class,

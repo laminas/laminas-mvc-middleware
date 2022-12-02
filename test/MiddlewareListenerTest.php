@@ -47,7 +47,8 @@ class MiddlewareListenerTest extends TestCase
         $eventManager   = new EventManager();
         $serviceManager = new ServiceManager([
             'factories' => [
-                'EventManager' =>  static fn (ContainerInterface $_): EventManager => new EventManager(),
+                /** phpcs:disable WebimpressCodingStandard.NamingConventions.ValidVariableName */
+                'EventManager' => static fn (ContainerInterface $_): EventManager => new EventManager(),
             ],
             'services'  => $services,
         ]);

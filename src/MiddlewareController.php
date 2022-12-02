@@ -15,7 +15,6 @@ use Laminas\Router\RouteMatch;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function get_class;
 use function sprintf;
 
 /**
@@ -71,7 +70,7 @@ final class MiddlewareController extends AbstractController
             throw new RuntimeException(sprintf(
                 'Expected request to be a %s, %s given',
                 Request::class,
-                get_class($request)
+                $request::class
             ));
         }
 

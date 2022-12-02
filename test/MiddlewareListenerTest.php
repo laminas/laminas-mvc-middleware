@@ -21,7 +21,7 @@ use Laminas\Stratigility\Exception\EmptyPipelineException;
 use Laminas\Stratigility\Middleware\CallableMiddlewareDecorator;
 use Laminas\View\Model\ModelInterface;
 use PHPUnit\Framework\TestCase;
-use Prophecy\PhpUnit\ProphecyTrait;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -33,13 +33,11 @@ use stdClass;
  */
 class MiddlewareListenerTest extends TestCase
 {
-    use ProphecyTrait;
-
     /**
      * Create an MvcEvent, populated with everything it needs.
      *
      * @psalm-param array<string, mixed> $matchedParams
-     * @psalm-param array<string, mixed> $services
+     * @psalm-param array<string, object|array> $services
      */
     public function createMvcEvent(array $matchedParams, array $services = []): MvcEvent
     {
@@ -49,29 +47,28 @@ class MiddlewareListenerTest extends TestCase
         $eventManager   = new EventManager();
         $serviceManager = new ServiceManager([
             'factories' => [
-                'EventManager' => function () {
-                    return new EventManager();
-                },
+                /** phpcs:disable WebimpressCodingStandard.NamingConventions.ValidVariableName */
+                'EventManager' => static fn (ContainerInterface $_): EventManager => new EventManager(),
             ],
             'services'  => $services,
         ]);
 
-        $application = $this->prophesize(Application::class);
-        $application->getEventManager()->willReturn($eventManager);
-        $application->getServiceManager()->willReturn($serviceManager);
-        $application->getResponse()->willReturn($response);
+        $application = $this->createMock(Application::class);
+        $application->method('getEventManager')->willReturn($eventManager);
+        $application->method('getServiceManager')->willReturn($serviceManager);
+        $application->method('getResponse')->willReturn($response);
 
         $event = new MvcEvent();
         $event->setRequest(new Request());
         $event->setResponse($response);
-        $event->setApplication($application->reveal());
+        $event->setApplication($application);
         $event->setRouteMatch($routeMatch);
 
         return $event;
     }
 
     /**
-     * @return iterable<string, array{0: array<string, mixed>, 1: array<string, mixed>, 2: string}>
+     * @return iterable<string, array{0: array<string, mixed>, 1: array<string, object|array>, 2: string}>
      */
     public function validMiddlewareProvider(): iterable
     {
@@ -225,7 +222,7 @@ class MiddlewareListenerTest extends TestCase
     /**
      * @dataProvider validMiddlewareProvider
      * @psalm-param array<string, mixed> $matchedParams
-     * @psalm-param array<string, mixed> $services
+     * @psalm-param array<string, object|array> $services
      */
     public function testSuccessfullyDispatchesMiddlewareAndReturnsResponse(
         array $matchedParams,
@@ -250,7 +247,7 @@ class MiddlewareListenerTest extends TestCase
     /**
      * @dataProvider validMiddlewareProvider
      * @psalm-param array<string, mixed> $matchedParams
-     * @psalm-param array<string, mixed> $services
+     * @psalm-param array<string, object|array> $services
      */
     public function testIgnoresMiddlewareParamIfControllerMarkerIsNotPipeSpec(
         array $matchedParams,
@@ -407,7 +404,7 @@ class MiddlewareListenerTest extends TestCase
     /**
      * @dataProvider validMiddlewareProvider
      * @psalm-param array<string, mixed> $matchedParams
-     * @psalm-param array<string, mixed> $services
+     * @psalm-param array<string, object|array> $services
      */
     public function testValidMiddlewareDispatchCancelsPreviousDispatchFailures(
         array $matchedParams,

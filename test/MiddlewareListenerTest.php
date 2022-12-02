@@ -21,6 +21,7 @@ use Laminas\Stratigility\Exception\EmptyPipelineException;
 use Laminas\Stratigility\Middleware\CallableMiddlewareDecorator;
 use Laminas\View\Model\ModelInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -36,7 +37,7 @@ class MiddlewareListenerTest extends TestCase
      * Create an MvcEvent, populated with everything it needs.
      *
      * @psalm-param array<string, mixed> $matchedParams
-     * @psalm-param array<string, mixed> $services
+     * @psalm-param array<string, object|array> $services
      */
     public function createMvcEvent(array $matchedParams, array $services = []): MvcEvent
     {
@@ -46,9 +47,7 @@ class MiddlewareListenerTest extends TestCase
         $eventManager   = new EventManager();
         $serviceManager = new ServiceManager([
             'factories' => [
-                'EventManager' => function () {
-                    return new EventManager();
-                },
+                'EventManager' =>  static fn (ContainerInterface $_): EventManager => new EventManager(),
             ],
             'services'  => $services,
         ]);
@@ -68,7 +67,7 @@ class MiddlewareListenerTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{0: array<string, mixed>, 1: array<string, mixed>, 2: string}>
+     * @return iterable<string, array{0: array<string, mixed>, 1: array<string, object|array>, 2: string}>
      */
     public function validMiddlewareProvider(): iterable
     {
@@ -222,7 +221,7 @@ class MiddlewareListenerTest extends TestCase
     /**
      * @dataProvider validMiddlewareProvider
      * @psalm-param array<string, mixed> $matchedParams
-     * @psalm-param array<string, mixed> $services
+     * @psalm-param array<string, object|array> $services
      */
     public function testSuccessfullyDispatchesMiddlewareAndReturnsResponse(
         array $matchedParams,
@@ -247,7 +246,7 @@ class MiddlewareListenerTest extends TestCase
     /**
      * @dataProvider validMiddlewareProvider
      * @psalm-param array<string, mixed> $matchedParams
-     * @psalm-param array<string, mixed> $services
+     * @psalm-param array<string, object|array> $services
      */
     public function testIgnoresMiddlewareParamIfControllerMarkerIsNotPipeSpec(
         array $matchedParams,
@@ -404,7 +403,7 @@ class MiddlewareListenerTest extends TestCase
     /**
      * @dataProvider validMiddlewareProvider
      * @psalm-param array<string, mixed> $matchedParams
-     * @psalm-param array<string, mixed> $services
+     * @psalm-param array<string, object|array> $services
      */
     public function testValidMiddlewareDispatchCancelsPreviousDispatchFailures(
         array $matchedParams,

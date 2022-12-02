@@ -21,7 +21,6 @@ use Laminas\Stratigility\Exception\EmptyPipelineException;
 use Laminas\Stratigility\Middleware\CallableMiddlewareDecorator;
 use Laminas\View\Model\ModelInterface;
 use PHPUnit\Framework\TestCase;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -33,8 +32,6 @@ use stdClass;
  */
 class MiddlewareListenerTest extends TestCase
 {
-    use ProphecyTrait;
-
     /**
      * Create an MvcEvent, populated with everything it needs.
      *
@@ -56,15 +53,15 @@ class MiddlewareListenerTest extends TestCase
             'services'  => $services,
         ]);
 
-        $application = $this->prophesize(Application::class);
-        $application->getEventManager()->willReturn($eventManager);
-        $application->getServiceManager()->willReturn($serviceManager);
-        $application->getResponse()->willReturn($response);
+        $application = $this->createMock(Application::class);
+        $application->method('getEventManager')->willReturn($eventManager);
+        $application->method('getServiceManager')->willReturn($serviceManager);
+        $application->method('getResponse')->willReturn($response);
 
         $event = new MvcEvent();
         $event->setRequest(new Request());
         $event->setResponse($response);
-        $event->setApplication($application->reveal());
+        $event->setApplication($application);
         $event->setRouteMatch($routeMatch);
 
         return $event;

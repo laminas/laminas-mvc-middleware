@@ -15,8 +15,6 @@ use Laminas\Mvc\MvcEvent;
 use Laminas\Router\Http\Literal;
 use LaminasTest\Mvc\Middleware\TestAsset\Middleware;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Server\MiddlewareInterface;
 
 /**
@@ -26,7 +24,6 @@ use Psr\Http\Server\MiddlewareInterface;
 class MiddlewareDispatchTest extends TestCase
 {
     use ApplicationTrait;
-    use ProphecyTrait;
 
     protected function setUp(): void
     {
@@ -62,11 +59,11 @@ class MiddlewareDispatchTest extends TestCase
         $request = $services->get('Request');
         $request->setUri('http://example.local/middleware');
 
-        $middlewareMock = $this->prophesize(MiddlewareInterface::class);
-        $middlewareMock->process(Argument::cetera())
-            ->willReturn(new Response())
-            ->shouldBeCalled();
-        $services->setService('MiddlewareMock', $middlewareMock->reveal());
+        $middlewareMock = $this->createMock(MiddlewareInterface::class);
+        $middlewareMock->expects(self::once())
+            ->method('process')
+            ->willReturn(new Response());
+        $services->setService('MiddlewareMock', $middlewareMock);
 
         $this->application->run();
     }

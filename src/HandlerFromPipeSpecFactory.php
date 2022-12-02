@@ -12,7 +12,6 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function get_class;
 use function gettype;
 use function is_object;
 use function is_string;
@@ -51,7 +50,7 @@ class HandlerFromPipeSpecFactory
             RequestHandlerInterface::class,
             Closure::class,
             PipeSpec::class,
-            is_object($middleware) ? get_class($middleware) : gettype($middleware)
+            is_object($middleware) ? $middleware::class : gettype($middleware)
         ));
     }
 

@@ -9,7 +9,6 @@ use Laminas\Mvc\Exception\InvalidMiddlewareException as DeprecatedMiddlewareExce
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function get_class;
 use function gettype;
 use function is_object;
 use function sprintf;
@@ -40,7 +39,7 @@ final class InvalidMiddlewareException extends DeprecatedMiddlewareException
      */
     public static function fromInvalidType($invalidMiddleware, ?string $name = ''): self
     {
-        $actual   = is_object($invalidMiddleware) ? get_class($invalidMiddleware) : gettype($invalidMiddleware);
+        $actual   = is_object($invalidMiddleware) ? $invalidMiddleware::class : gettype($invalidMiddleware);
         $instance = new self(sprintf(
             'Middleware in pipe spec can be one of: string container id, %s %s, or %s; %s given',
             MiddlewareInterface::class,

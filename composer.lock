@@ -181,16 +181,16 @@
         },
         {
             "name": "laminas/laminas-diactoros",
-            "version": "2.23.0",
+            "version": "2.24.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laminas/laminas-diactoros.git",
-                "reference": "a738cecb420e3bcff34c33177f1ce9f68902695c"
+                "reference": "6028af6c3b5ced4d063a680d2483cce67578b902"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laminas/laminas-diactoros/zipball/a738cecb420e3bcff34c33177f1ce9f68902695c",
-                "reference": "a738cecb420e3bcff34c33177f1ce9f68902695c",
+                "url": "https://api.github.com/repos/laminas/laminas-diactoros/zipball/6028af6c3b5ced4d063a680d2483cce67578b902",
+                "reference": "6028af6c3b5ced4d063a680d2483cce67578b902",
                 "shasum": ""
             },
             "require": {
@@ -213,9 +213,9 @@
                 "http-interop/http-factory-tests": "^0.9.0",
                 "laminas/laminas-coding-standard": "^2.4.0",
                 "php-http/psr7-integration-tests": "^1.2",
-                "phpunit/phpunit": "^9.5.26",
-                "psalm/plugin-phpunit": "^0.18.0",
-                "vimeo/psalm": "^5.0.0"
+                "phpunit/phpunit": "^9.5.27",
+                "psalm/plugin-phpunit": "^0.18.4",
+                "vimeo/psalm": "^5.4"
             },
             "type": "library",
             "extra": {
@@ -274,7 +274,7 @@
                     "type": "community_bridge"
                 }
             ],
-            "time": "2022-12-14T22:31:50+00:00"
+            "time": "2022-12-20T12:22:40+00:00"
         },
         {
             "name": "laminas/laminas-escaper",
@@ -340,16 +340,16 @@
         },
         {
             "name": "laminas/laminas-eventmanager",
-            "version": "3.9.0",
+            "version": "3.9.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laminas/laminas-eventmanager.git",
-                "reference": "74c091fb0da37744e7d215ef5bd3564c77f6385e"
+                "reference": "55f7c337f4e49baf6dca87220619d40d9518e6b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laminas/laminas-eventmanager/zipball/74c091fb0da37744e7d215ef5bd3564c77f6385e",
-                "reference": "74c091fb0da37744e7d215ef5bd3564c77f6385e",
+                "url": "https://api.github.com/repos/laminas/laminas-eventmanager/zipball/55f7c337f4e49baf6dca87220619d40d9518e6b6",
+                "reference": "55f7c337f4e49baf6dca87220619d40d9518e6b6",
                 "shasum": ""
             },
             "require": {
@@ -404,7 +404,7 @@
                     "type": "community_bridge"
                 }
             ],
-            "time": "2022-12-10T16:36:52+00:00"
+            "time": "2022-12-20T19:45:38+00:00"
         },
         {
             "name": "laminas/laminas-http",
@@ -745,21 +745,21 @@
         },
         {
             "name": "laminas/laminas-psr7bridge",
-            "version": "1.8.0",
+            "version": "1.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laminas/laminas-psr7bridge.git",
-                "reference": "6a653713d0b08b0b2e3fc89b61e0516ebe1966f5"
+                "reference": "fa4bdcc88727e37d51dedb7ddd0c5e9803d792b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laminas/laminas-psr7bridge/zipball/6a653713d0b08b0b2e3fc89b61e0516ebe1966f5",
-                "reference": "6a653713d0b08b0b2e3fc89b61e0516ebe1966f5",
+                "url": "https://api.github.com/repos/laminas/laminas-psr7bridge/zipball/fa4bdcc88727e37d51dedb7ddd0c5e9803d792b4",
+                "reference": "fa4bdcc88727e37d51dedb7ddd0c5e9803d792b4",
                 "shasum": ""
             },
             "require": {
                 "laminas/laminas-diactoros": "^2.0",
-                "laminas/laminas-http": "^2.15",
+                "laminas/laminas-http": "^2.18",
                 "php": "~8.0.0 || ~8.1.0 || ~8.2.0",
                 "psr/http-message": "^1.0"
             },
@@ -769,9 +769,9 @@
             },
             "require-dev": {
                 "laminas/laminas-coding-standard": "~2.4.0",
-                "phpunit/phpunit": "^9.5.25",
-                "psalm/plugin-phpunit": "^0.17.0",
-                "vimeo/psalm": "^4.28"
+                "phpunit/phpunit": "^9.5.27",
+                "psalm/plugin-phpunit": "^0.18.4",
+                "vimeo/psalm": "^5.4"
             },
             "type": "library",
             "autoload": {
@@ -805,7 +805,7 @@
                     "type": "community_bridge"
                 }
             ],
-            "time": "2022-10-11T00:15:30+00:00"
+            "time": "2022-12-20T12:37:06+00:00"
         },
         {
             "name": "laminas/laminas-router",

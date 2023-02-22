@@ -10,20 +10,25 @@ For example, to register an `AlbumListHandler` located in the `module/Applicatio
 your `Application` module, add the following route to `module/Application/config/module.config.php`:
 
 ```php
-use Application\Handler\AlbumListHandler;
+use Application\Handler\BlogListHandler;
 use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Router\Http\Literal;
 
 return [
+    'service_manager' => [
+        'factories' => [
+            Middleware\BlogListMiddleware::class => Factory\BlogListMiddlewareFactory::class,
+        ],
+    ],
     'router' => [
         'routes' => [
-            'album-list' => [
+            'blog-list' => [
                 'type' => Literal::class,
                 'options' => [
-                    'route' => '/albums',
+                    'route' => '/blog',
                     'defaults' => [
                         'controller' => PipeSpec::class,
-                        'middleware' => AlbumListHandler::class,
+                        'middleware' => Middleware\BlogListMiddleware::class,
                     ],
                 ],
             ],
@@ -66,90 +71,63 @@ A _RequestHandler_ is a class that receives a request and returns a response, wi
 For more in-depth documentation visit the documentation for [Mezzio](https://docs.mezzio.dev/mezzio/v3/getting-started/features/)
 and [Stratigility](https://docs.laminas.dev/laminas-stratigility/v3/intro/) or the [PSR-15 specification](https://www.php-fig.org/psr/psr-15/).
 
-### Request Handlers
-
-```php
-namespace Application\Handler;
-
-use Application\Entity\Album;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-
-class AlbumDetailMiddleware implements RequestHandlerInterface
-{
-    /** @var ResponseFactoryInterface */
-    private $responseFactory;
-    /** @var StreamFactoryInterface */
-    private $streamFactory;
-
-    public function __construct(ResponseFactoryInterface $responseFactory, StreamFactoryInterface $streamFactory)
-    {
-        $this->responseFactory = $responseFactory;
-        $this->streamFactory   = $streamFactory;
-    }
-
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        /** @var Album $album */
-        $album = $request->getAttribute('album');
-
-        $body = $this->streamFactory->createStream('The name of the album is: ' . $album->getName());
-        return $this->responseFactory->createResponse()->withBody($body);
-    }
-}
-```
-
-RequestHandlers resemble a single MVC Controller action, and will be used as the primary application functionality when
-dispatching a request.
-
 ### Middleware
 
 ```php
-namespace Application\Middleware;
+namespace Blog\Middleware;
 
-use Application\Repository\AlbumRepositoryInterface;
+use Blog\Repository\BlogListRepositoryInterface;
+use Blog\Handler\BlogListnHandler;
 use Fig\Http\Message\StatusCodeInterface;
+use Laminas\Diactoros\StreamFactory;
 use Laminas\Router\RouteMatch;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class AlbumFromRouteMiddleware implements MiddlewareInterface
+class BlogListMiddleware implements MiddlewareInterface
 {
-    /** @var AlbumRepositoryInterface */
-    private $albumRepository;
-    /** @var ResponseFactoryInterface */
-    private $responseFactory;
+    /** @var BlogListRepositoryInterface */
+    public $blogListRepository;
 
-    public function __construct(AlbumRepositoryInterface $albumRepository, ResponseFactoryInterface $responseFactory)
+    /** @var ResponseFactoryInterface */
+    public $responseFactory;
+
+    /** @var BlogListnHandler */
+    protected $handler;
+
+    /** @var StreamFactoryInterface */
+    public $streamFactory;
+
+    public function __construct(BlogListRepositoryInterface $blogListRepository, ResponseFactoryInterface $responseFactory)
     {
-        $this->albumRepository = $albumRepository;
-        $this->responseFactory = $responseFactory;
+        $this->blogListRepository = $blogListRepository;
+        $this->responseFactory    = $responseFactory;
+        $this->streamFactory      = new StreamFactory();
+        $this->handler            = new BlogListnHandler($this->responseFactory, $this->streamFactory);
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         /** @var RouteMatch $routeMatch */
         $routeMatch = $request->getAttribute(RouteMatch::class);
-        $albumId    = $routeMatch->getParam('album_id');
-        $album      = $this->albumRepository->findById($albumId);
+        $blogId     = $routeMatch->getParam('blog_id');
+        $blogPost   = $this->blogListRepository->findById($blogId);
 
         // if no album was found, we short-circuit the pipe and return a 404 error:
-        if ($album === null) {
+        if ($blogPost === null) {
             return $this->responseFactory->createResponse(
                 StatusCodeInterface::STATUS_NOT_FOUND,
-                sprintf('Album with ID %s not found!', $albumId)
+                sprintf('Blog post with ID %s not found!', $blogId)
             );
         }
 
         // ...otherwise we populate the request with the album and call the RequestHandler
-        $request = $request->withAttribute('album', $album);
-        return $handler->handle($request);
+        $request = $request->withAttribute('blogPost', $blogPost);
+        return $this->handler->handle($request);
     }
 }
 ```
@@ -159,6 +137,44 @@ while having a chance to act on passed request or returned response.
 Middleware in laminas-mvc is similar to [routed middleware](https://docs.mezzio.dev/mezzio/v3/features/router/piping/#routing)
 in Mezzio.
 > laminas-mvc does not have a global middleware pipe, so middleware can not be piped in front of MVC controllers.
+
+### Request Handlers
+
+```php
+namespace Blog\Handler;
+
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+class BlogListHandler implements RequestHandlerInterface
+{
+    /** @var ResponseFactoryInterface */
+    public $responseFactory;
+
+    /** @var StreamFactoryInterface */
+    public $streamFactory;
+
+    public function __construct(ResponseFactoryInterface $responseFactory, StreamFactoryInterface $streamFactory)
+    {
+        $this->responseFactory = $responseFactory;
+        $this->streamFactory   = $streamFactory;
+    }
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        $blogPost = $request->getAttribute('blogPost');
+
+        $body = $this->streamFactory->createStream('The name of the blog post title is: ' . $blogPost->getTitle());
+        return $this->responseFactory->createResponse()->withBody($body);
+    }
+}
+```
+
+RequestHandlers resemble a single MVC Controller action, and will be used as the primary application functionality when
+dispatching a request.
 
 ## Middleware Return Values
 

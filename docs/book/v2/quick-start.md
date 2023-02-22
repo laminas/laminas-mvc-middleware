@@ -37,7 +37,7 @@ or `Psr\Http\Server\RequestHandlerInterface`
 or as service name strings resolving to such instances.  
 You may also specify an instance of the `PipeSpec` class which accepts both middleware types above or their service name
 strings, or a `Closure` . These will then be piped into a `Laminas\Stratigility\MiddlewarePipe` instance in the order in
-which they are present in the `PipeSpec`. See [routing middleware](routing-middleware.md) for examples.
+which they are present in the `PipeSpec`. See [dispatching middleware](dispatching-middleware.md) for examples.
 
 > ### No Action Required
 >

@@ -46,7 +46,7 @@
     "require-dev": {
         "brick/varexporter": "^0.3.7",
         "laminas/laminas-coding-standard": "^2.4",
-        "laminas/laminas-diactoros": "^2.22",
+        "laminas/laminas-diactoros": "^3.0",
         "laminas/laminas-router": "^3.10",
         "phpunit/phpunit": "^9.5.26",
         "psalm/plugin-phpunit": "^0.18.3",

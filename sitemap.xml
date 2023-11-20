@@ -2,42 +2,42 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://docs.laminas.dev/laminas-mvc-middleware/</loc>
-         <lastmod>2022-12-02</lastmod>
+         <lastmod>2023-11-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.laminas.dev/laminas-mvc-middleware/intro/</loc>
-         <lastmod>2022-12-02</lastmod>
+         <lastmod>2023-11-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.laminas.dev/laminas-mvc-middleware/v1/intro/</loc>
-         <lastmod>2022-12-02</lastmod>
+         <lastmod>2023-11-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.laminas.dev/laminas-mvc-middleware/v2/dispatching-middleware/</loc>
-         <lastmod>2022-12-02</lastmod>
+         <lastmod>2023-11-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.laminas.dev/laminas-mvc-middleware/v2/installation/</loc>
-         <lastmod>2022-12-02</lastmod>
+         <lastmod>2023-11-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.laminas.dev/laminas-mvc-middleware/v2/intro/</loc>
-         <lastmod>2022-12-02</lastmod>
+         <lastmod>2023-11-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.laminas.dev/laminas-mvc-middleware/v2/migration/</loc>
-         <lastmod>2022-12-02</lastmod>
+         <lastmod>2023-11-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.laminas.dev/laminas-mvc-middleware/v2/quick-start/</loc>
-         <lastmod>2022-12-02</lastmod>
+         <lastmod>2023-11-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

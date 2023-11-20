@@ -39,7 +39,7 @@ class MiddlewareListenerTest extends TestCase
      * @psalm-param array<string, mixed> $matchedParams
      * @psalm-param array<string, object|array> $services
      */
-    public function createMvcEvent(array $matchedParams, array $services = []): MvcEvent
+    public static function createMvcEvent(array $matchedParams, array $services = []): MvcEvent
     {
         $response   = new Response();
         $routeMatch = new RouteMatch($matchedParams);
@@ -53,7 +53,7 @@ class MiddlewareListenerTest extends TestCase
             'services'  => $services,
         ]);
 
-        $application = $this->createMock(Application::class);
+        $application = self::createStub(Application::class);
         $application->method('getEventManager')->willReturn($eventManager);
         $application->method('getServiceManager')->willReturn($serviceManager);
         $application->method('getResponse')->willReturn($response);
@@ -70,7 +70,7 @@ class MiddlewareListenerTest extends TestCase
     /**
      * @return iterable<string, array{0: array<string, mixed>, 1: array<string, object|array>, 2: string}>
      */
-    public function validMiddlewareProvider(): iterable
+    public static function validMiddlewareProvider(): iterable
     {
         // Remember that mutable body writes are bad!
         $middleware             = new class implements MiddlewareInterface {
@@ -224,12 +224,12 @@ class MiddlewareListenerTest extends TestCase
      * @psalm-param array<string, mixed> $matchedParams
      * @psalm-param array<string, object|array> $services
      */
-    public function testSuccessfullyDispatchesMiddlewareAndReturnsResponse(
+    public static function testSuccessfullyDispatchesMiddlewareAndReturnsResponse(
         array $matchedParams,
         array $services,
         string $expectedBody
     ): void {
-        $event = $this->createMvcEvent($matchedParams, $services);
+        $event = self::createMvcEvent($matchedParams, $services);
 
         $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
@@ -254,7 +254,7 @@ class MiddlewareListenerTest extends TestCase
         array $services
     ): void {
         $matchedParams['controller'] = 'some_controller';
-        $event                       = $this->createMvcEvent($matchedParams, $services);
+        $event                       = self::createMvcEvent($matchedParams, $services);
 
         $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
@@ -280,7 +280,7 @@ class MiddlewareListenerTest extends TestCase
                 },
             ],
         ];
-        $event         = $this->createMvcEvent($matchedParams, []);
+        $event         = self::createMvcEvent($matchedParams, []);
         $application   = $event->getApplication();
 
         $application->getEventManager()->attach(
@@ -317,7 +317,7 @@ class MiddlewareListenerTest extends TestCase
             ),
         ];
 
-        $event = $this->createMvcEvent($matchedParams, []);
+        $event = self::createMvcEvent($matchedParams, []);
 
         $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
@@ -341,7 +341,7 @@ class MiddlewareListenerTest extends TestCase
             'test_param' => 'test_param_value',
         ];
 
-        $event    = $this->createMvcEvent($matchedParams, []);
+        $event    = self::createMvcEvent($matchedParams, []);
         $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
         $return   = $listener->onDispatch($event);
 
@@ -362,7 +362,7 @@ class MiddlewareListenerTest extends TestCase
                 throw $exception;
             }),
         ];
-        $event         = $this->createMvcEvent($matchedParams, []);
+        $event         = self::createMvcEvent($matchedParams, []);
 
         $application = $event->getApplication();
         $application->getEventManager()
@@ -386,7 +386,7 @@ class MiddlewareListenerTest extends TestCase
             'controller' => PipeSpec::class,
             'middleware' => new PipeSpec(),
         ];
-        $event         = $this->createMvcEvent($matchedParams, []);
+        $event         = self::createMvcEvent($matchedParams, []);
 
         $application = $event->getApplication();
         $application->getEventManager()
@@ -410,7 +410,7 @@ class MiddlewareListenerTest extends TestCase
         array $matchedParams,
         array $services
     ): void {
-        $event = $this->createMvcEvent($matchedParams, $services);
+        $event = self::createMvcEvent($matchedParams, $services);
         $event->setError(Application::ERROR_CONTROLLER_CANNOT_DISPATCH);
 
         $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
@@ -434,7 +434,7 @@ class MiddlewareListenerTest extends TestCase
             'controller' => PipeSpec::class,
             'middleware' => $middleware,
         ];
-        $event         = $this->createMvcEvent($matchedParams, []);
+        $event         = self::createMvcEvent($matchedParams, []);
         $event->setResult($alreadySetResult);
 
         $listener = new MiddlewareListener(new HandlerFromPipeSpecFactory());
@@ -447,7 +447,7 @@ class MiddlewareListenerTest extends TestCase
     /**
      * @return mixed[][]
      */
-    public function alreadySetMvcEventResultProvider(): array
+    public static function alreadySetMvcEventResultProvider(): array
     {
         return [
             [123],
@@ -455,9 +455,9 @@ class MiddlewareListenerTest extends TestCase
             [false],
             [[]],
             [new stdClass()],
-            [$this],
-            [$this->createMock(ModelInterface::class)],
-            [$this->createMock(Response::class)],
+            [new stdClass()],
+            [self::createStub(ModelInterface::class)],
+            [self::createStub(Response::class)],
             [['view model data' => 'as an array']],
             [['foo' => new stdClass()]],
             ['a response string'],

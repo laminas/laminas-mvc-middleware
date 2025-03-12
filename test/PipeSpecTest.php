@@ -7,6 +7,7 @@ namespace LaminasTest\Mvc\Middleware;
 use Brick\VarExporter\VarExporter;
 use Laminas\Diactoros\Response;
 use Laminas\Mvc\Middleware\PipeSpec;
+use Override;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -21,7 +22,7 @@ final class PipeSpecTest extends TestCase
     public function testAcceptsSpreadAndRetainsOrder(): void
     {
         $middleware = new class implements MiddlewareInterface {
-            #[\Override]
+            #[Override]
             public function process(
                 ServerRequestInterface $request,
                 RequestHandlerInterface $handler

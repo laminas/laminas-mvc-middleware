@@ -14,6 +14,7 @@ use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Router\Http\Literal;
 use LaminasTest\Mvc\Middleware\TestAsset\Middleware;
+use Override;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Server\MiddlewareInterface;
 
@@ -25,7 +26,7 @@ final class MiddlewareDispatchTest extends TestCase
 {
     use ApplicationTrait;
 
-    #[\Override]
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -47,7 +48,7 @@ final class MiddlewareDispatchTest extends TestCase
         ]);
     }
 
-    #[\Override]
+    #[Override]
     protected function tearDown(): void
     {
         $this->tearDownApplication();

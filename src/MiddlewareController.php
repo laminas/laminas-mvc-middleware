@@ -12,6 +12,7 @@ use Laminas\Mvc\Exception\RuntimeException;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Psr7Bridge\Psr7ServerRequest;
 use Laminas\Router\RouteMatch;
+use Override;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -45,7 +46,7 @@ final class MiddlewareController extends AbstractController
      *
      * @throws RuntimeException
      */
-    #[\Override]
+    #[Override]
     public function onDispatch(MvcEvent $e)
     {
         $routeMatch  = $e->getRouteMatch();

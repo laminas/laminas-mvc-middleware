@@ -16,6 +16,7 @@ use Laminas\Mvc\MvcEvent;
 use Laminas\Router\RouteMatch;
 use Laminas\Stdlib\DispatchableInterface;
 use Laminas\Stdlib\RequestInterface;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -40,12 +41,12 @@ final class MiddlewareControllerTest extends TestCase
     /**
      * {@inheritDoc}
      */
-    #[\Override]
+    #[Override]
     protected function setUp(): void
     {
         $this->requestHandler = $this->createMock(RequestHandlerInterface::class);
-        $this->event = new MvcEvent();
-        $this->eventManager = new EventManager();
+        $this->event          = new MvcEvent();
+        $this->eventManager   = new EventManager();
 
         $this->controller = new MiddlewareController(
             $this->requestHandler,
@@ -71,8 +72,8 @@ final class MiddlewareControllerTest extends TestCase
 
     public function testWillDispatchARequestAndSetResponseFromAGivenRequestHandler(): void
     {
-        $request = new Request();
-        $result = $this->createMock(ResponseInterface::class);
+        $request          = new Request();
+        $result           = $this->createMock(ResponseInterface::class);
         $dispatchListener = $this->listenerSpy($request);
         $this->eventManager->attach(MvcEvent::EVENT_DISPATCH, $dispatchListener, 100);
         $this->eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, function () {
@@ -92,7 +93,7 @@ final class MiddlewareControllerTest extends TestCase
     public function testWillRefuseDispatchingInvalidRequestTypes(): void
     {
         /** @var RequestInterface $invalidRequest */
-        $invalidRequest = $this->createMock(RequestInterface::class);
+        $invalidRequest   = $this->createMock(RequestInterface::class);
         $dispatchListener = $this->listenerSpy($invalidRequest);
         $this->eventManager->attach(MvcEvent::EVENT_DISPATCH, $dispatchListener, 100);
 
@@ -104,7 +105,7 @@ final class MiddlewareControllerTest extends TestCase
 
     public function testWillSetRouteMatchAsARequestAttribute(): void
     {
-        $request = new Request();
+        $request    = new Request();
         $routeMatch = new RouteMatch(['middleware' => 'foo']);
         $this->event->setRouteMatch($routeMatch);
 
@@ -128,7 +129,7 @@ final class MiddlewareControllerTest extends TestCase
 
     public function testWillNotSetRouteMatchParamsAsRequestAttributes(): void
     {
-        $request = new Request();
+        $request    = new Request();
         $routeMatch = new RouteMatch(['middleware' => 'foo']);
         $this->event->setRouteMatch($routeMatch);
 

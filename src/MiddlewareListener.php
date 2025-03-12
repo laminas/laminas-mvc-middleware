@@ -9,6 +9,7 @@ use Laminas\EventManager\EventManagerInterface;
 use Laminas\Mvc\Application;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Psr7Bridge\Psr7Response;
+use Override;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
@@ -25,7 +26,7 @@ final class MiddlewareListener extends AbstractListenerAggregate
     /**
      * {@inheritDoc}
      */
-    #[\Override]
+    #[Override]
     public function attach(EventManagerInterface $events, $priority = 1): void
     {
         $this->listeners[] = $events->attach(MvcEvent::EVENT_DISPATCH, [$this, 'onDispatch'], 1);

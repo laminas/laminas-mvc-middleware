@@ -6,7 +6,7 @@ namespace Laminas\Mvc\Middleware;
 
 use Laminas\Mvc\MiddlewareListener as DeprecatedMiddlewareListener;
 
-class Module
+final class Module
 {
     public function getConfig(): array
     {

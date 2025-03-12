@@ -21,10 +21,11 @@ use Psr\Http\Server\MiddlewareInterface;
  * @group integration
  * @coversNothing
  */
-class MiddlewareDispatchTest extends TestCase
+final class MiddlewareDispatchTest extends TestCase
 {
     use ApplicationTrait;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -46,6 +47,7 @@ class MiddlewareDispatchTest extends TestCase
         ]);
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $this->tearDownApplication();

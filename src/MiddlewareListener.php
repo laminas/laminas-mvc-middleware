@@ -12,7 +12,7 @@ use Laminas\Psr7Bridge\Psr7Response;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
-class MiddlewareListener extends AbstractListenerAggregate
+final class MiddlewareListener extends AbstractListenerAggregate
 {
     /** @var HandlerFromPipeSpecFactory */
     private $pipeSpecFactory;
@@ -25,6 +25,7 @@ class MiddlewareListener extends AbstractListenerAggregate
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function attach(EventManagerInterface $events, $priority = 1): void
     {
         $this->listeners[] = $events->attach(MvcEvent::EVENT_DISPATCH, [$this, 'onDispatch'], 1);

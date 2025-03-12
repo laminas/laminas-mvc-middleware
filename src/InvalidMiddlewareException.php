@@ -25,6 +25,7 @@ final class InvalidMiddlewareException extends DeprecatedMiddlewareException
      * @param string      $middlewareName
      * @psalm-param mixed $middlewareName
      */
+    #[\Override]
     public static function fromMiddlewareName($middlewareName): self
     {
         $middlewareName = (string) $middlewareName;
@@ -60,6 +61,7 @@ final class InvalidMiddlewareException extends DeprecatedMiddlewareException
         return $instance;
     }
 
+    #[\Override]
     public function toMiddlewareName(): string
     {
         return $this->middlewareName;

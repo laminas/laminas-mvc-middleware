@@ -7,11 +7,12 @@ namespace LaminasTest\Mvc\Middleware\Integration\TestAsset;
 use Laminas\EventManager\AbstractListenerAggregate;
 use Laminas\EventManager\EventManagerInterface;
 
-class NoopSendResponseListener extends AbstractListenerAggregate
+final class NoopSendResponseListener extends AbstractListenerAggregate
 {
     /**
      * @param int $priority
      */
+    #[\Override]
     public function attach(EventManagerInterface $events, $priority = 1)
     {
         // noop

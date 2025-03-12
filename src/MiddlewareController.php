@@ -45,6 +45,7 @@ final class MiddlewareController extends AbstractController
      *
      * @throws RuntimeException
      */
+    #[\Override]
     public function onDispatch(MvcEvent $e)
     {
         $routeMatch  = $e->getRouteMatch();

@@ -20,7 +20,7 @@ use function sprintf;
 /**
  * @internal
  */
-class HandlerFromPipeSpecFactory
+final class HandlerFromPipeSpecFactory
 {
     /**
      * @param string|MiddlewareInterface|RequestHandlerInterface|Closure|PipeSpec $middleware

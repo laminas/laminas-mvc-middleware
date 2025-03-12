@@ -16,11 +16,12 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * @covers \Laminas\Mvc\Middleware\PipeSpec
  */
-class PipeSpecTest extends TestCase
+final class PipeSpecTest extends TestCase
 {
     public function testAcceptsSpreadAndRetainsOrder(): void
     {
         $middleware = new class implements MiddlewareInterface {
+            #[\Override]
             public function process(
                 ServerRequestInterface $request,
                 RequestHandlerInterface $handler
@@ -48,7 +49,6 @@ class PipeSpecTest extends TestCase
         /** @var PipeSpec $restoredPipeSpec */
         $restoredPipeSpec = eval($export);
         self::assertInstanceOf(PipeSpec::class, $restoredPipeSpec);
-        /** @var list<mixed> $restoredSpec */
         $restoredSpec = $restoredPipeSpec->getSpec();
         self::assertEquals(
             ['container_key_string', $middleware, 'another_key'],

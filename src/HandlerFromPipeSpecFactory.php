@@ -19,13 +19,14 @@ use function sprintf;
 
 /**
  * @internal
+ *
  * @final
  */
 class HandlerFromPipeSpecFactory
 {
     /**
      * @param string|MiddlewareInterface|RequestHandlerInterface|Closure|PipeSpec $middleware
-     * @psalm-param mixed                                                         $middleware
+     * @psalm-param mixed $middleware
      */
     public function createFromMiddlewareParam(ContainerInterface $container, $middleware): RequestHandlerInterface
     {
@@ -45,14 +46,16 @@ class HandlerFromPipeSpecFactory
             return $this->createPipeFromSpec($container, $middleware);
         }
 
-        throw new InvalidMiddlewareException(sprintf(
-            'Middleware can be one of: string container id, %s, %s, %s or %s; %s given',
-            MiddlewareInterface::class,
-            RequestHandlerInterface::class,
-            Closure::class,
-            PipeSpec::class,
-            is_object($middleware) ? $middleware::class : gettype($middleware)
-        ));
+        throw new InvalidMiddlewareException(
+            sprintf(
+                'Middleware can be one of: string container id, %s, %s, %s or %s; %s given',
+                MiddlewareInterface::class,
+                RequestHandlerInterface::class,
+                Closure::class,
+                PipeSpec::class,
+                is_object($middleware) ? $middleware::class : gettype($middleware)
+            )
+        );
     }
 
     public function createPipeFromSpec(
@@ -70,7 +73,7 @@ class HandlerFromPipeSpecFactory
 
     /**
      * @param string|MiddlewareInterface|RequestHandlerInterface|Closure $middleware
-     * @psalm-param mixed                                                $middleware
+     * @psalm-param mixed $middleware
      */
     private function resolveMiddlewareFromSpec(ContainerInterface $container, $middleware): MiddlewareInterface
     {

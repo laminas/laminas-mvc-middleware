@@ -20,6 +20,7 @@ use function sprintf;
 
 /**
  * @internal
+ *
  * @final
  */
 class MiddlewareController extends AbstractController
@@ -70,11 +71,13 @@ class MiddlewareController extends AbstractController
         $request = $this->request;
 
         if (! $request instanceof Request) {
-            throw new RuntimeException(sprintf(
-                'Expected request to be a %s, %s given',
-                Request::class,
-                $request::class
-            ));
+            throw new RuntimeException(
+                sprintf(
+                    'Expected request to be a %s, %s given',
+                    Request::class,
+                    $request::class
+                )
+            );
         }
 
         return Psr7ServerRequest::fromLaminas($request);

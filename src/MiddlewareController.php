@@ -20,8 +20,9 @@ use function sprintf;
 
 /**
  * @internal
+ * @final
  */
-final class MiddlewareController extends AbstractController
+class MiddlewareController extends AbstractController
 {
     /** @var RequestHandlerInterface */
     private $requestHandler;

@@ -19,8 +19,9 @@ use function sprintf;
 
 /**
  * @internal
+ * @final
  */
-final class HandlerFromPipeSpecFactory
+class HandlerFromPipeSpecFactory
 {
     /**
      * @param string|MiddlewareInterface|RequestHandlerInterface|Closure|PipeSpec $middleware

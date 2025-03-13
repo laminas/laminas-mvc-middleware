@@ -11,7 +11,10 @@ use Webmozart\Assert\Assert;
 
 use function array_values;
 
-final class PipeSpec
+/**
+ * @final
+ */
+class PipeSpec
 {
     /**
      * @var list<string|RequestHandlerInterface|MiddlewareInterface|Closure>

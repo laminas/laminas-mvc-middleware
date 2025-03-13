@@ -13,7 +13,10 @@ use Override;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
-final class MiddlewareListener extends AbstractListenerAggregate
+/**
+ * @final
+ */
+class MiddlewareListener extends AbstractListenerAggregate
 {
     /** @var HandlerFromPipeSpecFactory */
     private $pipeSpecFactory;

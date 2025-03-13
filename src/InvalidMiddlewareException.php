@@ -16,8 +16,9 @@ use function sprintf;
 
 /**
  * @psalm-suppress DeprecatedClass
+ * @final
  */
-final class InvalidMiddlewareException extends DeprecatedMiddlewareException
+class InvalidMiddlewareException extends DeprecatedMiddlewareException
 {
     /** @var string */
     private $middlewareName = '';

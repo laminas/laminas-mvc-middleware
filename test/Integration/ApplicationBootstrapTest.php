@@ -6,22 +6,25 @@ namespace LaminasTest\Mvc\Middleware\Integration;
 
 use Laminas\Mvc\Middleware\MiddlewareListener;
 use Laminas\Mvc\MiddlewareListener as DeprecatedMiddlewareListener;
+use Override;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @group integration
  * @coversNothing
  */
-class ApplicationBootstrapTest extends TestCase
+final class ApplicationBootstrapTest extends TestCase
 {
     use ApplicationTrait;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
         $this->setUpApplication();
     }
 
+    #[Override]
     protected function tearDown(): void
     {
         $this->tearDownApplication();

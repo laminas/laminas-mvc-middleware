@@ -16,6 +16,7 @@ use Laminas\Mvc\MvcEvent;
 use Laminas\Router\RouteMatch;
 use Laminas\Stdlib\DispatchableInterface;
 use Laminas\Stdlib\RequestInterface;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -26,7 +27,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  * @covers \Laminas\Mvc\Middleware\MiddlewareController
  * @psalm-suppress InternalMethod
  */
-class MiddlewareControllerTest extends TestCase
+final class MiddlewareControllerTest extends TestCase
 {
     /** @var MiddlewareController */
     private $controller;
@@ -40,6 +41,7 @@ class MiddlewareControllerTest extends TestCase
     /**
      * {@inheritDoc}
      */
+    #[Override]
     protected function setUp(): void
     {
         $this->requestHandler = $this->createMock(RequestHandlerInterface::class);
@@ -110,14 +112,16 @@ class MiddlewareControllerTest extends TestCase
         $this->requestHandler
             ->expects(self::once())
             ->method('handle')
-            ->with(self::callback(function (ServerRequestInterface $request) {
-                /** @var RouteMatch $routeMatch */
-                $routeMatch = $request->getAttribute(RouteMatch::class);
-                self::assertInstanceOf(RouteMatch::class, $routeMatch);
-                self::assertSame('foo', $routeMatch->getParam('middleware'));
+            ->with(
+                self::callback(function (ServerRequestInterface $request) {
+                    /** @var RouteMatch $routeMatch */
+                    $routeMatch = $request->getAttribute(RouteMatch::class);
+                    self::assertInstanceOf(RouteMatch::class, $routeMatch);
+                    self::assertSame('foo', $routeMatch->getParam('middleware'));
 
-                return true;
-            }))
+                    return true;
+                })
+            )
             ->willReturn($this->createMock(ResponseInterface::class));
 
         $this->controller->dispatch($request);
@@ -132,12 +136,14 @@ class MiddlewareControllerTest extends TestCase
         $this->requestHandler
             ->expects(self::once())
             ->method('handle')
-            ->with(self::callback(function (ServerRequestInterface $request) {
-                self::assertInstanceOf(RouteMatch::class, $request->getAttribute(RouteMatch::class));
-                self::assertNull($request->getAttribute('middleware'));
+            ->with(
+                self::callback(function (ServerRequestInterface $request) {
+                    self::assertInstanceOf(RouteMatch::class, $request->getAttribute(RouteMatch::class));
+                    self::assertNull($request->getAttribute('middleware'));
 
-                return true;
-            }))
+                    return true;
+                })
+            )
             ->willReturn($this->createMock(ResponseInterface::class));
 
         $this->controller->dispatch($request);
@@ -147,7 +153,7 @@ class MiddlewareControllerTest extends TestCase
     {
         $callCount = 0;
         return function (MvcEvent $event) use ($request, &$callCount): bool {
-            $callCount = (int) $callCount + 1;
+            $callCount++;
             self::assertSame($this->event, $event);
             self::assertSame(MvcEvent::EVENT_DISPATCH, $event->getName());
             self::assertSame($this->controller, $event->getTarget());

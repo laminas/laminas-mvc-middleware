@@ -12,6 +12,7 @@ use Laminas\Mvc\Exception\RuntimeException;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Psr7Bridge\Psr7ServerRequest;
 use Laminas\Router\RouteMatch;
+use Override;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -45,6 +46,7 @@ final class MiddlewareController extends AbstractController
      *
      * @throws RuntimeException
      */
+    #[Override]
     public function onDispatch(MvcEvent $e)
     {
         $routeMatch  = $e->getRouteMatch();
@@ -67,11 +69,13 @@ final class MiddlewareController extends AbstractController
         $request = $this->request;
 
         if (! $request instanceof Request) {
-            throw new RuntimeException(sprintf(
-                'Expected request to be a %s, %s given',
-                Request::class,
-                $request::class
-            ));
+            throw new RuntimeException(
+                sprintf(
+                    'Expected request to be a %s, %s given',
+                    Request::class,
+                    $request::class
+                )
+            );
         }
 
         return Psr7ServerRequest::fromLaminas($request);

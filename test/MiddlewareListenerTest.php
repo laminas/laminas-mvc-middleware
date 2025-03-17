@@ -20,6 +20,7 @@ use Laminas\ServiceManager\ServiceManager;
 use Laminas\Stratigility\Exception\EmptyPipelineException;
 use Laminas\Stratigility\Middleware\CallableMiddlewareDecorator;
 use Laminas\View\Model\ModelInterface;
+use Override;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -31,7 +32,7 @@ use stdClass;
 /**
  * @covers \Laminas\Mvc\Middleware\MiddlewareListener
  */
-class MiddlewareListenerTest extends TestCase
+final class MiddlewareListenerTest extends TestCase
 {
     /**
      * Create an MvcEvent, populated with everything it needs.
@@ -74,6 +75,7 @@ class MiddlewareListenerTest extends TestCase
     {
         // Remember that mutable body writes are bad!
         $middleware             = new class implements MiddlewareInterface {
+            #[Override]
             public function process(
                 ServerRequestInterface $request,
                 RequestHandlerInterface $handler
@@ -84,6 +86,7 @@ class MiddlewareListenerTest extends TestCase
             }
         };
         $directReturnMiddleware = new class implements MiddlewareInterface {
+            #[Override]
             public function process(
                 ServerRequestInterface $request,
                 RequestHandlerInterface $handler
@@ -94,6 +97,7 @@ class MiddlewareListenerTest extends TestCase
             }
         };
         $handler                = new class implements RequestHandlerInterface {
+            #[Override]
             public function handle(
                 ServerRequestInterface $request
             ): ResponseInterface {
@@ -103,6 +107,7 @@ class MiddlewareListenerTest extends TestCase
             }
         };
         $middlewareWithHandler  = new class implements MiddlewareInterface, RequestHandlerInterface {
+            #[Override]
             public function process(
                 ServerRequestInterface $request,
                 RequestHandlerInterface $handler
@@ -112,6 +117,7 @@ class MiddlewareListenerTest extends TestCase
                 return $response;
             }
 
+            #[Override]
             public function handle(
                 ServerRequestInterface $request
             ): ResponseInterface {
@@ -129,6 +135,7 @@ class MiddlewareListenerTest extends TestCase
             return $response;
         };
         $containerMiddleware    = new class implements MiddlewareInterface {
+            #[Override]
             public function process(
                 ServerRequestInterface $request,
                 RequestHandlerInterface $handler
@@ -139,6 +146,7 @@ class MiddlewareListenerTest extends TestCase
             }
         };
         $containerHandler       = new class implements RequestHandlerInterface {
+            #[Override]
             public function handle(
                 ServerRequestInterface $request
             ): ResponseInterface {
@@ -269,6 +277,7 @@ class MiddlewareListenerTest extends TestCase
             'controller' => PipeSpec::class,
             'middleware' => [
                 new class implements MiddlewareInterface {
+                    #[Override]
                     public function process(
                         ServerRequestInterface $request,
                         RequestHandlerInterface $handler

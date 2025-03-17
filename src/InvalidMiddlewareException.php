@@ -6,6 +6,7 @@ namespace Laminas\Mvc\Middleware;
 
 use Closure;
 use Laminas\Mvc\Exception\InvalidMiddlewareException as DeprecatedMiddlewareException;
+use Override;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -25,6 +26,7 @@ final class InvalidMiddlewareException extends DeprecatedMiddlewareException
      * @param string      $middlewareName
      * @psalm-param mixed $middlewareName
      */
+    #[Override]
     public static function fromMiddlewareName($middlewareName): self
     {
         $middlewareName = (string) $middlewareName;
@@ -60,6 +62,7 @@ final class InvalidMiddlewareException extends DeprecatedMiddlewareException
         return $instance;
     }
 
+    #[Override]
     public function toMiddlewareName(): string
     {
         return $this->middlewareName;

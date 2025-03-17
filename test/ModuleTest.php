@@ -5,16 +5,18 @@ declare(strict_types=1);
 namespace LaminasTest\Mvc\Middleware;
 
 use Laminas\Mvc\Middleware\Module;
+use Override;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Laminas\Mvc\Middleware\Module
  */
-class ModuleTest extends TestCase
+final class ModuleTest extends TestCase
 {
     /** @var Module */
     private $module;
 
+    #[Override]
     protected function setUp(): void
     {
         $this->module = new Module();

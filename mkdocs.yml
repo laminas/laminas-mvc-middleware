@@ -26,4 +26,4 @@ plugins:
   - search
   - redirects:
       redirect_maps:
-        intro.md: v1/intro.md
+        intro.md: v2/intro.md

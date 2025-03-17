@@ -45,12 +45,12 @@
     },
     "require-dev": {
         "brick/varexporter": "^0.5",
-        "laminas/laminas-coding-standard": "~2.5.0",
-        "laminas/laminas-diactoros": "^2.25.2 || ^3.0",
-        "laminas/laminas-router": "^3.10",
-        "phpunit/phpunit": "^10.4",
-        "psalm/plugin-phpunit": "^0.19",
-        "vimeo/psalm": "^6.0"
+        "laminas/laminas-coding-standard": "~3.0.1",
+        "laminas/laminas-diactoros": "^2.25.2 || ^3.5",
+        "laminas/laminas-router": "^3.14",
+        "phpunit/phpunit": "^10.5.45",
+        "psalm/plugin-phpunit": "^0.19.2",
+        "vimeo/psalm": "^6.9.1"
     },
     "autoload": {
         "psr-4": {

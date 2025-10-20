@@ -583,20 +583,20 @@
         },
         {
             "name": "laminas/laminas-modulemanager",
-            "version": "2.17.0",
+            "version": "2.18.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laminas/laminas-modulemanager.git",
-                "reference": "3cd6e84ba767b43a47c6c4245a56b30ac3738c6a"
+                "reference": "4b14617df01be6c83ac62fdb689427f8ed56d9c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laminas/laminas-modulemanager/zipball/3cd6e84ba767b43a47c6c4245a56b30ac3738c6a",
-                "reference": "3cd6e84ba767b43a47c6c4245a56b30ac3738c6a",
+                "url": "https://api.github.com/repos/laminas/laminas-modulemanager/zipball/4b14617df01be6c83ac62fdb689427f8ed56d9c1",
+                "reference": "4b14617df01be6c83ac62fdb689427f8ed56d9c1",
                 "shasum": ""
             },
             "require": {
-                "brick/varexporter": "^0.3.2 || ^0.4 || ^0.5",
+                "brick/varexporter": "^0.3.2 || ^0.4 || ^0.5 || ^0.6",
                 "laminas/laminas-config": "^3.7",
                 "laminas/laminas-eventmanager": "^3.4",
                 "laminas/laminas-stdlib": "^3.6",
@@ -608,13 +608,15 @@
                 "zendframework/zend-modulemanager": "*"
             },
             "require-dev": {
-                "laminas/laminas-coding-standard": "^3.0.1",
+                "amphp/dns": "^1.24 || ^2.1.2",
+                "amphp/socket": "^1.2.1 || ^2.3.1",
+                "laminas/laminas-coding-standard": "~3.1.0",
                 "laminas/laminas-loader": "^2.11",
                 "laminas/laminas-mvc": "^3.7.0",
                 "laminas/laminas-servicemanager": "^3.23.0",
                 "phpunit/phpunit": "^10.5.38",
-                "psalm/plugin-phpunit": "^0.19.0",
-                "vimeo/psalm": "^5.26.1"
+                "psalm/plugin-phpunit": "^0.19.5",
+                "vimeo/psalm": "^6.13.1"
             },
             "suggest": {
                 "laminas/laminas-console": "Laminas\\Console component",
@@ -652,7 +654,7 @@
                     "type": "community_bridge"
                 }
             ],
-            "time": "2024-11-17T22:29:29+00:00"
+            "time": "2025-10-17T18:22:00+00:00"
         },
         {
             "name": "laminas/laminas-mvc",
@@ -1236,16 +1238,16 @@
         },
         {
             "name": "laminas/laminas-view",
-            "version": "2.42.0",
+            "version": "2.43.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laminas/laminas-view.git",
-                "reference": "535128105bd0e703fba6f60800bbac0252819730"
+                "reference": "5f60f0f781e6888eb1fa131bf123c401013225a0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laminas/laminas-view/zipball/535128105bd0e703fba6f60800bbac0252819730",
-                "reference": "535128105bd0e703fba6f60800bbac0252819730",
+                "url": "https://api.github.com/repos/laminas/laminas-view/zipball/5f60f0f781e6888eb1fa131bf123c401013225a0",
+                "reference": "5f60f0f781e6888eb1fa131bf123c401013225a0",
                 "shasum": ""
             },
             "require": {
@@ -1257,7 +1259,7 @@
                 "laminas/laminas-json": "^3.3",
                 "laminas/laminas-servicemanager": "^3.21.0",
                 "laminas/laminas-stdlib": "^3.10.1",
-                "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
+                "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
                 "psr/container": "^1 || ^2"
             },
             "conflict": {
@@ -1284,7 +1286,7 @@
                 "laminas/laminas-permissions-acl": "^2.17",
                 "laminas/laminas-router": "^3.14.0",
                 "laminas/laminas-uri": "^2.13",
-                "phpunit/phpunit": "^10.5.53",
+                "phpunit/phpunit": "^10.5.58",
                 "psalm/plugin-phpunit": "^0.19.5",
                 "vimeo/psalm": "^6.13.1"
             },
@@ -1334,7 +1336,7 @@
                     "type": "community_bridge"
                 }
             ],
-            "time": "2025-09-23T11:38:01+00:00"
+            "time": "2025-10-13T13:07:56+00:00"
         },
         {
             "name": "nikic/php-parser",

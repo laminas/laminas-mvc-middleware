@@ -41,7 +41,7 @@
         "laminas/laminas-stratigility": "^3.3",
         "psr/http-server-handler": "^1.0.2",
         "psr/http-server-middleware": "^1.0.2",
-        "webmozart/assert": "^1.9"
+        "webmozart/assert": "^1.9 || ^2.0"
     },
     "require-dev": {
         "brick/varexporter": "^0.6",

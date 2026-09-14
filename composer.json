@@ -34,7 +34,7 @@
         }
     },
     "require": {
-        "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
+        "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
         "laminas/laminas-mvc": "^3.2",
         "laminas/laminas-psr7bridge": "^1.10",
         "laminas/laminas-servicemanager": "^3.4",
@@ -44,12 +44,12 @@
         "webmozart/assert": "^1.9"
     },
     "require-dev": {
-        "brick/varexporter": "^0.6",
+        "brick/varexporter": "^0.7",
         "laminas/laminas-coding-standard": "~3.1.0",
         "laminas/laminas-diactoros": "^2.25.2 || ^3.5",
         "laminas/laminas-router": "^3.14",
         "phpunit/phpunit": "^10.5.45",
-        "psalm/plugin-phpunit": "^0.19.2",
+        "psalm/plugin-phpunit": "^0.20.0",
         "vimeo/psalm": "^6.9.1"
     },
     "autoload": {
